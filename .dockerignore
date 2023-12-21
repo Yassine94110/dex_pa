@@ -1,0 +1,12 @@
+# Ignore les fichiers et répertoires spécifiques
+
+**/.next
+**/node_modules
+**/npm-debug.log
+.dockerignore
+**/Dockerfile
+.git
+.gitignore
+**/*.md
+**/*.json
+**/*.lock
