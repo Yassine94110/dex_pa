@@ -10,3 +10,38 @@ services:
     container_name: front
     ports:
       - "3000:3000"
+  
+  api:
+    build: 
+      context: ./back
+      dockerfile: Dockerfile
+    container_name: my_api
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL : "postgres://admin:adminpwd@postgresdb:5432/db"
+    depends_on:
+      db:
+        condition: service_healthy
+  
+  postgresdb:
+    image: postgres:latest
+    container_name: my_postgres_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin      # Remplacez par le nom d'utilisateur souhaité
+      POSTGRES_PASSWORD: adminpwd  # Remplacez par le mot de passe souhaité
+      POSTGRES_DB: db   # Remplacez par le nom de la base de données souhaité
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    
+volumes:
+  postgres_data:

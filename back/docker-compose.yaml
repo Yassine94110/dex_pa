@@ -1,0 +1,17 @@
+# ONLY TO LAUNCH A TEST DB
+
+version: '3.8'
+
+services:
+  postgresdb:
+    image: postgres:latest
+    container_name: postgresdb
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpwd
+      POSTGRES_DB: db
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
