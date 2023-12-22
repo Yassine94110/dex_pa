@@ -1,12 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/Yassine94110/dex_pa/back/db"
+	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 )
 
@@ -26,37 +26,45 @@ func run() error {
 	if err != nil {
 		database_url := os.Getenv("DATABASE_URL")
 		fmt.Println("database_url variable : ", database_url)
-		log.Fatal("Cannot connect to database")
+		log.Fatal("Cannot connect to database : ", err)
 	}
 	// Defer disconnect until program stops
 	defer prisma.Client.Disconnect()
 
+	app := fiber.New()
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World!")
+	})
+
+	app.Listen(":3001")
+
 	// create a wallet
-	wallets := []string{"0x123456789"}
-	createdWallet, err := prisma.Client.User.CreateOne(
-		db.User.Wallets.Set(wallets),
-	).Exec(prisma.Context)
-	if err != nil {
-		return err
-	}
+	// wallets := []string{"0x123456789"}
+	// createdWallet, err := prisma.Client.User.CreateOne(
+	// 	db.User.Wallets.Set(wallets),
+	// ).Exec(prisma.Context)
+	// if err != nil {
+	// 	return err
+	// }
 
-	result, _ := json.MarshalIndent(createdWallet, "", "  ")
-	fmt.Printf("created post: %s\n", result)
+	// result, _ := json.MarshalIndent(createdWallet, "", "  ")
+	// fmt.Printf("created post: %s\n", result)
 
-	// find a single post
-	wallet, err := prisma.Client.User.FindUnique(
-		db.User.ID.Equals(createdWallet.ID),
-	).Exec(prisma.Context)
-	if err != nil {
-		return err
-	}
+	// // find a single post
+	// wallet, err := prisma.Client.User.FindUnique(
+	// 	db.User.ID.Equals(createdWallet.ID),
+	// ).Exec(prisma.Context)
+	// if err != nil {
+	// 	return err
+	// }
 
-	result, _ = json.MarshalIndent(wallet, "", "  ")
-	fmt.Printf("post: %s\n", result)
+	// result, _ = json.MarshalIndent(wallet, "", "  ")
+	// fmt.Printf("post: %s\n", result)
 
-	desc := wallet.Role
+	// desc := wallet.Role
 
-	fmt.Printf("The posts's description is: %s\n", desc)
+	// fmt.Printf("The posts's description is: %s\n", desc)
 
 	return nil
 }
