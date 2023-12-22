@@ -18,28 +18,6 @@ services:
     container_name: my_api
     ports:
       - "3001:3001"
-    links:
-      - postgresdb
-    depends_on:
-      postgresdb:
-        condition: service_completed_successfully
-
-  postgresdb:
-    image: postgres:latest
-    container_name: my_postgres_db
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: admin     
-      POSTGRES_PASSWORD: adminpwd  
-      POSTGRES_DB: db   
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d db"]
-      interval: 2s
-      timeout: 2s
-      retries: 5
     
 volumes:
   postgres_data:

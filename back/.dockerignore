@@ -2,6 +2,6 @@
 Dockerfile
 docker-compose.yaml
 postgres-data
-# db/db_gen.go
-# db/query-engine-darwin-arm64_gen.go
+db/db_gen.go
+db/query-engine-darwin-arm64_gen.go
 # .env
