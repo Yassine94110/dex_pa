@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Web3Modal } from '@/components/Web3Modal';
-import Navbar from '@/components/Navbar';
+import { headers } from 'next/headers';
+import { cookieToInitialState } from 'wagmi';
+import Web3ModalProvider from '@/lib/context';
+import { config } from '@/lib/config';
+import { ThemeProvider } from '@/components/theme-provider';
+import { Navbar } from '@/components/Navbar';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -13,13 +17,21 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const initialState = cookieToInitialState(config, headers().get('cookie'));
   return (
     <html lang='en'>
       <body>
-        <Web3Modal>
-          <Navbar />
-          {children}
-        </Web3Modal>
+        <ThemeProvider
+          attribute='class'
+          defaultTheme='dark'
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Web3ModalProvider initialState={initialState}>
+            <Navbar />
+            {children}
+          </Web3ModalProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,116 +1,78 @@
 'use client';
 
+import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { BiMenuAltRight, BiWindowClose } from 'react-icons/bi';
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  navigationMenuTriggerStyle,
+} from '@/components/ui/navigation-menu';
+import { cn } from '@/lib/utils';
 
-const Navbar = () => {
-  const pathname = usePathname();
-  const [menu, setMenu] = useState(false);
-
-  if (menu) document.body.style.overflow = 'hidden';
-
-  const closeMenu = () => {
-    setMenu(false);
-    document.body.style.overflow = 'auto';
-  };
-
+export const Navbar = () => {
   return (
-    <div className='text-white first-letter absolute top-0 w-full z-50'>
-      <nav className='flex px-4 sm:px-12 py-8 bg-transparent justify-between'>
-        <div className='flex items-center gap-8'>
-          <Link href='/' className='hidden md:block'>
-            <Image src='/logo_nobg.png' alt='logo' width={50} height={50} />
-          </Link>
+    <nav className='absolute z-50 p-4 w-full flex justify-between items-center'>
+      <div className='flex gap-4 items-center'>
+        <Link href='/' className='hidden md:block'>
+          <Image src='/logo_nobg.png' alt='logo' width={50} height={50} />
+        </Link>
 
-          <div className='hidden md:flex gap-6'>
-            <Link
-              href='https://t.me/waiter_x_bot'
-              className={`text-xl hover:text-[#4457FF] duration-300 ease-in-out ${
-                pathname === '/leaderboard' && 'text-[#4457FF]'
-              }`}
-            >
-              Applications
-            </Link>
-            <Link
-              href='/'
-              className={`text-xl hover:text-[#4457FF] duration-300 ease-in-out ${
-                pathname === '/leaderboard' && 'text-[#4457FF]'
-              }`}
-            >
-              Twitter
-            </Link>
-            <Link
-              href='/'
-              className={`text-xl hover:text-[#4457FF] duration-300 ease-in-out ${
-                pathname === '/leaderboard' && 'text-[#4457FF]'
-              }`}
-            >
-              Discord
-            </Link>
-          </div>
-        </div>
-
-        <div className='xl:hidden flex gap-6 items-center'>
-          {!menu && (
-            <>
-              <w3m-button />
-              <button onClick={() => setMenu(true)}>
-                <BiMenuAltRight size={50} />
-              </button>
-            </>
-          )}
-        </div>
-      </nav>
-
-      {menu && (
-        <div className='absolute bg-black/30 w-full h-screen top-0 left-0'>
-          <div className='absolute z-10 flex flex-col items-start top-0 left-0 p-4 pt-8 bg-[#2F3439] h-screen w-[350px]'>
-            <button onClick={() => closeMenu()} className='absolute right-4'>
-              <BiWindowClose size={50} className='text-[#ff000088]' />
-            </button>
-
-            <Link href='/'>
-              <Image src='/logo_nobg.png' alt='logo' width={50} height={50} />
-            </Link>
-
-            <div className='flex flex-col justify-between h-full w-full'>
-              <div className='flex flex-col gap-6 mt-8'>
-                <Link
-                  href='https://t.me/waiter_x_bot'
-                  className={`text-xl hover:text-[#4457FF] duration-300 ease-in-out ${
-                    pathname === '/leaderboard' && 'text-[#4457FF]'
-                  }`}
-                >
-                  Applications
-                </Link>
-                <Link
-                  href='/'
-                  className={`text-xl hover:text-[#4457FF] duration-300 ease-in-out ${
-                    pathname === '/leaderboard' && 'text-[#4457FF]'
-                  }`}
-                >
-                  Twitter
-                </Link>
-                <Link
-                  href='/'
-                  className={`text-xl hover:text-[#4457FF] duration-300 ease-in-out ${
-                    pathname === '/leaderboard' && 'text-[#4457FF]'
-                  }`}
-                >
-                  Discord
-                </Link>
-              </div>
-
-              <w3m-button />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+        <NavigationMenu>
+          <NavigationMenuList className='gap-2'>
+            <NavigationMenuItem>
+              <Link href='/' legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Swap
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href='/explore' legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Explore
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href='/dashboard' legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Dashboard
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>
+      <w3m-button />
+    </nav>
   );
 };
 
-export default Navbar;
+const ListItem = React.forwardRef<
+  React.ElementRef<'a'>,
+  React.ComponentPropsWithoutRef<'a'>
+>(({ className, title, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+            className
+          )}
+          {...props}
+        >
+          <div className='text-sm font-medium leading-none'>{title}</div>
+          <p className='line-clamp-2 text-sm leading-snug text-muted-foreground'>
+            {children}
+          </p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  );
+});
+ListItem.displayName = 'ListItem';
