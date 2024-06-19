@@ -10,8 +10,8 @@ import {
 
 const page = () => {
   return (
-    <div className='flex flex-col gap-4 justify-center'>
-      <Input placeholder='Search a token' className='max-w-xs' />
+    <div className='flex flex-col gap-4 justify-center max-h-[32rem] overflow-scroll'>
+      <Input placeholder='Search a token' className='max-w-xs rounded-xl' />
       <Table className='max-w-2xl min-w-96 dark:bg-[#38313ddc] rounded-xl shadow-xl border border-accent overflow-clip'>
         <TableHeader>
           <TableRow>
@@ -32,6 +32,70 @@ const page = () => {
           />
           <TokenRow
             number={2}
+            token='Token Name 2'
+            short='TKN2'
+            price={0.0}
+            volume={0.0}
+            img='/eth.png'
+          />
+          <TokenRow
+            number={3}
+            token='Token Name 2'
+            short='TKN2'
+            price={0.0}
+            volume={0.0}
+            img='/eth.png'
+          />
+          <TokenRow
+            number={4}
+            token='Token Name 2'
+            short='TKN2'
+            price={0.0}
+            volume={0.0}
+            img='/eth.png'
+          />
+          <TokenRow
+            number={5}
+            token='Token Name 2'
+            short='TKN2'
+            price={0.0}
+            volume={0.0}
+            img='/eth.png'
+          />
+          <TokenRow
+            number={5}
+            token='Token Name 2'
+            short='TKN2'
+            price={0.0}
+            volume={0.0}
+            img='/eth.png'
+          />
+          <TokenRow
+            number={5}
+            token='Token Name 2'
+            short='TKN2'
+            price={0.0}
+            volume={0.0}
+            img='/eth.png'
+          />
+          <TokenRow
+            number={5}
+            token='Token Name 2'
+            short='TKN2'
+            price={0.0}
+            volume={0.0}
+            img='/eth.png'
+          />
+          <TokenRow
+            number={5}
+            token='Token Name 2'
+            short='TKN2'
+            price={0.0}
+            volume={0.0}
+            img='/eth.png'
+          />
+          <TokenRow
+            number={5}
             token='Token Name 2'
             short='TKN2'
             price={0.0}
