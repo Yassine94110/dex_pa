@@ -23,7 +23,7 @@ export const Navbar = () => {
         <NavigationMenu>
           <NavigationMenuList className='gap-2'>
             <NavigationMenuItem>
-              <Link href='/' legacyBehavior passHref>
+              <Link href='/swap' legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Swap
                 </NavigationMenuLink>
