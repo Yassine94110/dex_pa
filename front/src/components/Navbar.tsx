@@ -30,16 +30,23 @@ export const Navbar = () => {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link href='/explore' legacyBehavior passHref>
+              <Link href='/token' legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Explore
+                  Token
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link href='/dashboard' legacyBehavior passHref>
+              <Link href='/pool' legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Dashboard
+                  Pool
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href='/profile' legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Profile
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
