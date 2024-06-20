@@ -1,19 +1,23 @@
-FROM golang:latest as builder
+# Étape de construction
+FROM golang:1.21 as build
 
-WORKDIR /app
+WORKDIR /workspace
 
-COPY . .
+# add go modules lockfiles
+COPY go.mod go.sum ./
+RUN go mod download
 
-RUN go run github.com/steebchen/prisma-client-go db push
-RUN go install
-RUN go build -o main /app
+# prefetch the binaries, so that they will be cached and not downloaded on each change
+RUN go run github.com/steebchen/prisma-client-go prefetch
 
-FROM golang:latest as runner
+COPY . ./
 
-WORKDIR /app
-COPY --from=builder /app/main .
-COPY --from=builder /app/.env .
+# generate the Prisma Client Go client
+RUN go run github.com/steebchen/prisma-client-go generate
+# or, if you use go generate to run the generator, use the following line instead
+# RUN go generate ./...
 
-EXPOSE 3001
+# build the binary with all dependencies
+RUN go build -o /app .
 
-ENTRYPOINT [ "/app/main" ]
+CMD ["/app"]

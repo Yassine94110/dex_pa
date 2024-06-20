@@ -1,35 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os"
 
-	"github.com/Yassine94110/dex_pa/back/db"
+	"dex_pa/prisma/db"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	if err := run(); err != nil {
-		panic(err)
-	}
-}
-
-func run() error {
-	err := godotenv.Load()
+	client := db.NewClient()
+	err := client.Prisma.Connect()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalf("failed to connect to database: %v", err)
 	}
-	// Handle DB connection
-	prisma, err := db.ConnectDB()
-	if err != nil {
-		database_url := os.Getenv("DATABASE_URL")
-		fmt.Println("database_url variable : ", database_url)
-		log.Fatal("Cannot connect to database : ", err)
-	}
-	// Defer disconnect until program stops
-	defer prisma.Client.Disconnect()
+	defer client.Prisma.Disconnect()
 
 	app := fiber.New()
 
@@ -37,34 +22,21 @@ func run() error {
 		return c.SendString("Hello, World!")
 	})
 
-	app.Listen(":3001")
+	// Routes for users
+	app.Get("/user", getAllUsers(client))
+	app.Post("/user", createUser(client))
+	app.Get("/user/:id", getUser(client))
+	app.Put("/user/:id", updateUser(client))
+	app.Delete("/user/:id", deleteUser(client))
 
-	// create a wallet
-	// wallets := []string{"0x123456789"}
-	// createdWallet, err := prisma.Client.User.CreateOne(
-	// 	db.User.Wallets.Set(wallets),
-	// ).Exec(prisma.Context)
-	// if err != nil {
-	// 	return err
-	// }
+	// Routes for tokens
+	app.Get("/token", getAllTokens(client))
+	app.Post("/token", addToken(client))
+	app.Get("/token/:address", getToken(client))
+	app.Put("/token/:address", updateToken(client))
+	app.Delete("/token/:address", deleteToken(client))
 
-	// result, _ := json.MarshalIndent(createdWallet, "", "  ")
-	// fmt.Printf("created post: %s\n", result)
+	log.Println("Server is starting on port 3001...")
 
-	// // find a single post
-	// wallet, err := prisma.Client.User.FindUnique(
-	// 	db.User.ID.Equals(createdWallet.ID),
-	// ).Exec(prisma.Context)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// result, _ = json.MarshalIndent(wallet, "", "  ")
-	// fmt.Printf("post: %s\n", result)
-
-	// desc := wallet.Role
-
-	// fmt.Printf("The posts's description is: %s\n", desc)
-
-	return nil
+	log.Fatal(app.Listen(":3001"))
 }

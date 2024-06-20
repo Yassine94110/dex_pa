@@ -1,7 +1,13 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Web3Modal } from '@/components/Web3Modal';
-import Navbar from '@/components/Navbar';
+import { headers } from 'next/headers';
+import { cookieToInitialState } from 'wagmi';
+import Web3ModalProvider from '@/lib/context';
+import { config } from '@/lib/config';
+import { ThemeProvider } from '@/components/theme-provider';
+import { Navbar } from '@/components/Navbar';
+import RadialGradient from '@/components/ui/radial-gradient';
+import { Vortex } from '@/components/ui/vortex';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -13,13 +19,32 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const initialState = cookieToInitialState(config, headers().get('cookie'));
   return (
     <html lang='en'>
       <body>
-        <Web3Modal>
-          <Navbar />
-          {children}
-        </Web3Modal>
+        <ThemeProvider
+          attribute='class'
+          defaultTheme='dark'
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Web3ModalProvider initialState={initialState}>
+            <Navbar />
+            <main className='relative overflow-hidden flex flex-col max-h-[100vh] h-[100vh]'>
+              <Vortex
+                backgroundColor='black'
+                rangeY={100}
+                particleCount={200}
+                baseHue={80}
+                className='flex items-center flex-col justify-center px-2 md:px-10  py-4 w-full h-full'
+              >
+                {children}
+              </Vortex>
+            </main>
+            <RadialGradient />
+          </Web3ModalProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
