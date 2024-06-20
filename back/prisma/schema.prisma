@@ -1,0 +1,24 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator go {
+  provider = "go run github.com/steebchen/prisma-client-go"
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  address          String   @unique
+  username         String
+  date_inscription DateTime @default(now())
+  date_derniere_connexion DateTime @updatedAt
+}
+
+model Token {
+  id     Int      @id @default(autoincrement())
+  address String   @unique
+  date    DateTime @default(now())
+}
