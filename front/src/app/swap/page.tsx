@@ -1,3 +1,4 @@
+import { Send } from '@/components/Send';
 import { Swap } from '@/components/Swap';
 import { Tabs } from '@/components/ui/tabs';
 
@@ -11,11 +12,7 @@ export default function Home() {
     {
       title: 'Send',
       value: 'send',
-      content: (
-        <div>
-          <p>Send</p>
-        </div>
-      ),
+      content: <Send />,
     },
   ];
 

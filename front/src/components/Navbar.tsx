@@ -17,7 +17,13 @@ export const Navbar = () => {
     <nav className='absolute z-50 p-4 w-full flex justify-between items-center'>
       <div className='flex gap-4 items-center'>
         <Link href='/' className='hidden md:block'>
-          <Image src='/logo_nobg.png' alt='logo' width={50} height={50} />
+          <Image
+            src='/logo-glx1.webp'
+            alt='logo'
+            width={70}
+            height={70}
+            className='rounded-full'
+          />
         </Link>
 
         <NavigationMenu>

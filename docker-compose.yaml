@@ -9,20 +9,36 @@ services:
       POSTGRES_DB: database
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     ports:
       - "5432:5432"
 
-  app:
+  api:
     build:
       context: ./back
       dockerfile: Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "3001:3001"
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/database
     command: /bin/sh -c "go run github.com/steebchen/prisma-client-go db push && /app"
+
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    env_file: ./front/.env.local
 
 volumes:
   db-data:
