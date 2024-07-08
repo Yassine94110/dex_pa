@@ -39,7 +39,7 @@ export default function RootLayout({
                 rangeY={100}
                 particleCount={200}
                 baseHue={80}
-                className='flex items-center flex-col justify-center px-2 md:px-10  py-4 w-full h-full'
+                className='px-2 md:px-10  pb-4 pt-32'
               >
                 {children}
               </Vortex>

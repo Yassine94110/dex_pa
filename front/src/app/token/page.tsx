@@ -10,100 +10,33 @@ import {
 
 const page = () => {
   return (
-    <div className='flex flex-col gap-4 justify-center max-h-[32rem] overflow-scroll'>
-      <Input placeholder='Search a token' className='max-w-xs rounded-xl' />
-      <Table className='max-w-2xl min-w-96 dark:bg-[#38313ddc] rounded-xl shadow-xl border border-accent overflow-clip'>
-        <TableHeader>
-          <TableRow>
-            <TableHead className='w-[20px]'>#</TableHead>
-            <TableHead>Token name</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Volume</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TokenRow
-            number={1}
-            token='Token Name'
-            short='TKN'
-            price={0.0}
-            volume={0.0}
-            img='/eth.png'
-          />
-          <TokenRow
-            number={2}
-            token='Token Name 2'
-            short='TKN2'
-            price={0.0}
-            volume={0.0}
-            img='/eth.png'
-          />
-          <TokenRow
-            number={3}
-            token='Token Name 2'
-            short='TKN2'
-            price={0.0}
-            volume={0.0}
-            img='/eth.png'
-          />
-          <TokenRow
-            number={4}
-            token='Token Name 2'
-            short='TKN2'
-            price={0.0}
-            volume={0.0}
-            img='/eth.png'
-          />
-          <TokenRow
-            number={5}
-            token='Token Name 2'
-            short='TKN2'
-            price={0.0}
-            volume={0.0}
-            img='/eth.png'
-          />
-          <TokenRow
-            number={5}
-            token='Token Name 2'
-            short='TKN2'
-            price={0.0}
-            volume={0.0}
-            img='/eth.png'
-          />
-          <TokenRow
-            number={5}
-            token='Token Name 2'
-            short='TKN2'
-            price={0.0}
-            volume={0.0}
-            img='/eth.png'
-          />
-          <TokenRow
-            number={5}
-            token='Token Name 2'
-            short='TKN2'
-            price={0.0}
-            volume={0.0}
-            img='/eth.png'
-          />
-          <TokenRow
-            number={5}
-            token='Token Name 2'
-            short='TKN2'
-            price={0.0}
-            volume={0.0}
-            img='/eth.png'
-          />
-          <TokenRow
-            number={5}
-            token='Token Name 2'
-            short='TKN2'
-            price={0.0}
-            volume={0.0}
-            img='/eth.png'
-          />
-        </TableBody>
-      </Table>
+    <div className='flex flex-col gap-4 justify-center'>
+      <Input placeholder='Search a token' className='max-w-xs rounded-lg' />
+      <div className='overflow-y-scroll rounded-lg dark:bg-[#38313ddc]'>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className='w-[20px]'>#</TableHead>
+              <TableHead>Token name</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Volume</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...Array(20)].map((_, index) => (
+              <TokenRow
+                key={index}
+                number={index + 1}
+                token={`Token Name ${index + 1}`}
+                short={`TKN${index + 1}`}
+                price={0.0}
+                volume={0.0}
+                img='/eth.png'
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
