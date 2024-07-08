@@ -4,8 +4,10 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {console} from "forge-std/Test.sol";
 
 error assetNotCorrect();
+error Unauthorized();
 
 contract LiquidityPool is ReentrancyGuard {
     event priceChanged(address _asset, uint256 price);
@@ -27,10 +29,12 @@ contract LiquidityPool is ReentrancyGuard {
     uint256 public liquidity;
     uint256 public yield;
     uint256 public swapFee;
-    address public owner;
+    address public immutable owner;
 
     modifier onlyOwner() {
-        msg.sender == owner;
+        if (msg.sender != owner) {
+            revert Unauthorized();
+        }
         _;
     }
 
@@ -41,7 +45,7 @@ contract LiquidityPool is ReentrancyGuard {
         swapFee = 1000000000000000;
     }
 
-    function changeSwapFee(uint256 newSwapFee) public onlyOwner {
+    function changeSwapFee(uint256 newSwapFee) external onlyOwner {
         swapFee = newSwapFee;
     }
 
