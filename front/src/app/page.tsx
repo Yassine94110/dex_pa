@@ -49,15 +49,15 @@ export function OrbitingCirclesSwap() {
         />
       </OrbitingCircles>
       <OrbitingCircles
-        className='size-[50px] border-none bg-transparent'
-        radius={190}
+        className='size-[40px] border-none bg-transparent'
+        radius={140}
         duration={20}
         reverse
       >
-        <Image src='/matic.png' alt='bitcoin' width={200} height={200} />
+        <Image src='/matic.png' alt='bitcoin' width={500} height={500} />
       </OrbitingCircles>
       <OrbitingCircles
-        className='size-[50px] border-none bg-transparent'
+        className='size-[40px] border-none bg-transparent'
         radius={190}
         duration={20}
         delay={20}

@@ -1,5 +1,4 @@
 import { TokenRow } from '@/components/TokenRow';
-import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -11,10 +10,9 @@ import {
 const page = () => {
   return (
     <div className='flex flex-col gap-4 justify-center'>
-      <Input placeholder='Search a token' className='max-w-xs rounded-lg' />
-      <div className='overflow-y-scroll rounded-lg dark:bg-[#38313ddc]'>
+      <div className='rounded-lg bg-transparent flex flex-col h-[80vh] overflow-auto'>
         <Table>
-          <TableHeader>
+          <TableHeader className=''>
             <TableRow>
               <TableHead className='w-[20px]'>#</TableHead>
               <TableHead>Token name</TableHead>
@@ -22,7 +20,7 @@ const page = () => {
               <TableHead>Volume</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className=''>
             {[...Array(20)].map((_, index) => (
               <TokenRow
                 key={index}
