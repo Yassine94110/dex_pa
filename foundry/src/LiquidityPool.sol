@@ -4,7 +4,13 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {console} from "forge-std/Test.sol";
 
+<<<<<<< HEAD
+=======
+error assetNotCorrect();
+error Unauthorized();
+>>>>>>> origin/develop
 
 error assetNotCorrect();
 error notEnoughTokens();
@@ -43,7 +49,7 @@ contract LiquidityPool is ReentrancyGuard {
     uint256 public liquidity;
     uint256 public yield;
     uint256 public swapFee;
-    address public owner;
+    address public immutable owner;
 
 
 
@@ -51,8 +57,14 @@ contract LiquidityPool is ReentrancyGuard {
      * @dev Modifier to restrict functions only to the owner.
      */
     modifier onlyOwner() {
+<<<<<<< HEAD
      //msg.sender == owner;
      require(msg.sender==owner,"not owner");
+=======
+        if (msg.sender != owner) {
+            revert Unauthorized();
+        }
+>>>>>>> origin/develop
         _;
     }
 

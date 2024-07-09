@@ -11,13 +11,21 @@ import {
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 import { cn } from '@/lib/utils';
+import { useAccount } from 'wagmi';
 
 export const Navbar = () => {
+  const account = useAccount();
   return (
     <nav className='absolute z-50 p-4 w-full flex justify-between items-center'>
       <div className='flex gap-4 items-center'>
         <Link href='/' className='hidden md:block'>
-          <Image src='/logo_nobg.png' alt='logo' width={50} height={50} />
+          <Image
+            src='/logo-glx1.webp'
+            alt='logo'
+            width={70}
+            height={70}
+            className='rounded-full'
+          />
         </Link>
 
         <NavigationMenu>
@@ -43,13 +51,15 @@ export const Navbar = () => {
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href='/profile' legacyBehavior passHref>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Profile
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
+            {account.status === 'connected' && (
+              <NavigationMenuItem>
+                <Link href='/profile' legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    Profile
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+            )}
           </NavigationMenuList>
         </NavigationMenu>
       </div>
