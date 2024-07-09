@@ -3,11 +3,10 @@ pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
 import {DEX} from "../src/DEX.sol";
-import {JapanToken} from "../src/Japan.sol";
+import {JapanToken} from "../src/JapanToken.sol";
 import {GSToken} from "../src/GSToken.sol";
-import "forge-std/console.sol";
 
-contract CounterTest is Test {
+contract DexTest is Test {
     DEX public Dex;
     GSToken public gsToken;
     JapanToken public japanToken;

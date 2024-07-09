@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {LiquidityPool} from "../src/LiquidityPool.sol";
 import {GSToken} from "../src/GSToken.sol";
 import {JapanToken} from "../src/JapanToken.sol";
-import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC20Errors.sol";
+import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 
 error Unauthorized();
 
