@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.13;
 
 interface ILiquidityPool {
     function addInitialLiquidity(uint256 _assetOneAmount, uint256 _assetTwoAmount) external;
