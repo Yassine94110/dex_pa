@@ -81,7 +81,7 @@ contract DEX is AccessControl {
 
     // ROLE 
      function register() public hasNoRole {
-         _grantRole(ROLE_USER, msg.sender);gi
+         _grantRole(ROLE_USER, msg.sender);
         }
 
         function ban(address _bannedUser) public onlyRole(ROLE_ADMIN){
