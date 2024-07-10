@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.26;
 
 import "./PoolFactory.sol";
 import "./ILiquidityPool.sol";
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {IAccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/IAccessControlEnumerable.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
+import "@openzeppelin/contracts/access/extensions/IAccessControlEnumerable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract DEX is AccessControl {
     event SwapExecuted(
@@ -19,12 +19,12 @@ contract DEX is AccessControl {
     bytes32 public constant ROLE_USER = keccak256("user");
     bytes32 public constant ROLE_ADMIN = keccak256("admin");
     bytes32 public constant ROLE_BANNED = keccak256("banned");
-    PoolFactory private poolFactory;
-    address public immutable owner;
+    PoolFactory public poolFactory;
 
     constructor() {
-        owner = msg.sender;
         _grantRole(ROLE_ADMIN, msg.sender);
+        _grantRole(ROLE_USER, msg.sender);
+
         poolFactory = new PoolFactory();
     }
 
@@ -44,20 +44,22 @@ contract DEX is AccessControl {
         address _pool,
         uint256 _assetOneAmount,
         uint256 _assetTwoAmount
-    ) public {
-        require(
-            hasRole(ROLE_USER, msg.sender) || hasRole(ROLE_ADMIN, msg.sender),
-            "userNotAuthorized"
-        );
+    ) public onlyRole(ROLE_USER) {
         ILiquidityPool pool = ILiquidityPool(_pool);
         pool.addInitialLiquidity(_assetOneAmount, _assetTwoAmount);
     }
 
-    function removeLiquidity(address _pool, uint256 _amount) public {
+    function getOwnerOfPool(address _pool) public view returns (address) {
+        return poolFactory.getOwnerPool(_pool);
+    }
+
+    function removeLiquidity(
+        address _pool,
+        uint256 _amount
+    ) public onlyRole(ROLE_USER) {
         ILiquidityPool pool = ILiquidityPool(_pool);
         pool.removeLiquidity(_amount);
     }
-
     function addLiquidity(
         address _asset,
         address _secondAsset,
@@ -73,22 +75,16 @@ contract DEX is AccessControl {
         address _pool,
         address _tokenIn,
         uint256 _amountIn
-    ) public payable returns (uint256 amountOut) {
+    ) public payable onlyRole(ROLE_USER) returns (uint256 amountOut) {
         ILiquidityPool pool = ILiquidityPool(_pool);
-        require(
-            hasRole(ROLE_USER, msg.sender) && !hasRole(ROLE_BANNED, msg.sender),
-            "userNotAuthorized"
-        );
-        require(
-            _tokenIn == pool.assetOneAddress() ||
-                _tokenIn == pool.assetTwoAddress(),
-            "invalidToken for this pool address"
-        );
-
         uint256 swapFee = pool.getSwapFee();
-        require(msg.value >= swapFee, "notEnoughGas");
+        require(msg.value >= swapFee, "notEnoughGas 1");
 
-        amountOut = pool.sellAsset{value: msg.value}(_tokenIn, _amountIn);
+        if (_tokenIn == pool.assetOneAddress()) {
+            amountOut = pool.sellAssetOne{value: msg.value}(_amountIn);
+        } else {
+            amountOut = pool.sellAssetTwo{value: msg.value}(_amountIn);
+        }
 
         emit SwapExecuted(
             msg.sender,
@@ -102,15 +98,13 @@ contract DEX is AccessControl {
         return amountOut;
     }
 
-    function getPools() public view returns (address[] memory) {
-        return poolFactory.getAllPools();
+    function getYield(address _pool) public onlyRole(ROLE_USER) {
+        ILiquidityPool pool = ILiquidityPool(_pool);
+        pool.getYield();
     }
 
-    function getPool(
-        address _token1,
-        address _token2
-    ) public view returns (address) {
-        return poolFactory.getPool(_token1, _token2);
+    function getPools() public view returns (address[] memory) {
+        return poolFactory.getAllPools();
     }
 
     // ROLE
@@ -122,20 +116,18 @@ contract DEX is AccessControl {
         renounceRole(ROLE_USER, _bannedUser);
         _grantRole(ROLE_BANNED, _bannedUser);
     }
-
     function unban(address _bannedUser) public onlyRole(ROLE_ADMIN) {
         renounceRole(ROLE_BANNED, _bannedUser);
         _grantRole(ROLE_USER, _bannedUser);
     }
-
     function grantAdmin(address _address) external onlyRole(ROLE_ADMIN) {
         _grantRole(ROLE_ADMIN, _address);
+        _grantRole(ROLE_USER, _address);
     }
 
     function isUser() public view returns (bool) {
         return hasRole(ROLE_USER, msg.sender);
     }
-
     //
 
     receive() external payable onlyRole(ROLE_ADMIN) {}
