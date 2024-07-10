@@ -6,9 +6,10 @@ interface PoolRowProps {
   token1: string;
   token2: string;
   transactions: number;
-  tvl: number;
   img1: string;
   img2: string;
+  assetOneLock: bigint;
+  assetTwoLock: bigint;
 }
 
 export const PoolRow = ({
@@ -16,9 +17,10 @@ export const PoolRow = ({
   token1,
   token2,
   transactions,
-  tvl,
   img1,
   img2,
+  assetOneLock,
+  assetTwoLock,
 }: PoolRowProps) => {
   return (
     <TableRow>
@@ -57,7 +59,8 @@ export const PoolRow = ({
         </div>
       </TableCell>
       <TableCell>{transactions}</TableCell>
-      <TableCell>{tvl}</TableCell>
+      <TableCell>{assetOneLock}</TableCell>
+      <TableCell>{assetTwoLock}</TableCell>
     </TableRow>
   );
 };
