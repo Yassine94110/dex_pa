@@ -89,7 +89,7 @@ contract LiquidityPool is ReentrancyGuard {
     function addInitialLiquidity(
         uint256 _assetOneAmount,
         uint256 _assetTwoAmount
-    ) public onlyOwner {
+    ) public {
         if (initialLiquidityProvidedTime[owner] > 0) {
             revert initialLiquidityAlreadyProvided();
         }

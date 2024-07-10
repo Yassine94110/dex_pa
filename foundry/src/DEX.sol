@@ -20,8 +20,10 @@ contract DEX is AccessControl {
     bytes32 public constant ROLE_ADMIN = keccak256("admin");
     bytes32 public constant ROLE_BANNED = keccak256("banned");
     PoolFactory private poolFactory;
+    address public immutable owner;
 
     constructor() {
+        owner = msg.sender;
         _grantRole(ROLE_ADMIN, msg.sender);
         poolFactory = new PoolFactory();
     }
@@ -43,6 +45,10 @@ contract DEX is AccessControl {
         uint256 _assetOneAmount,
         uint256 _assetTwoAmount
     ) public {
+        require(
+            hasRole(ROLE_USER, msg.sender) || hasRole(ROLE_ADMIN, msg.sender),
+            "userNotAuthorized"
+        );
         ILiquidityPool pool = ILiquidityPool(_pool);
         pool.addInitialLiquidity(_assetOneAmount, _assetTwoAmount);
     }
@@ -69,14 +75,20 @@ contract DEX is AccessControl {
         uint256 _amountIn
     ) public payable returns (uint256 amountOut) {
         ILiquidityPool pool = ILiquidityPool(_pool);
-        uint256 swapFee = pool.getSwapFee();
-        require(msg.value >= swapFee, "notEnoughGas 1");
+        require(
+            hasRole(ROLE_USER, msg.sender) && !hasRole(ROLE_BANNED, msg.sender),
+            "userNotAuthorized"
+        );
+        require(
+            _tokenIn == pool.assetOneAddress() ||
+                _tokenIn == pool.assetTwoAddress(),
+            "invalidToken for this pool address"
+        );
 
-        if (_tokenIn == pool.assetOneAddress()) {
-            amountOut = pool.sellAsset{value: msg.value}(_tokenIn, _amountIn);
-        } else {
-            amountOut = pool.sellAsset{value: msg.value}(_tokenIn, _amountIn);
-        }
+        uint256 swapFee = pool.getSwapFee();
+        require(msg.value >= swapFee, "notEnoughGas");
+
+        amountOut = pool.sellAsset{value: msg.value}(_tokenIn, _amountIn);
 
         emit SwapExecuted(
             msg.sender,
@@ -92,6 +104,13 @@ contract DEX is AccessControl {
 
     function getPools() public view returns (address[] memory) {
         return poolFactory.getAllPools();
+    }
+
+    function getPool(
+        address _token1,
+        address _token2
+    ) public view returns (address) {
+        return poolFactory.getPool(_token1, _token2);
     }
 
     // ROLE
@@ -111,7 +130,6 @@ contract DEX is AccessControl {
 
     function grantAdmin(address _address) external onlyRole(ROLE_ADMIN) {
         _grantRole(ROLE_ADMIN, _address);
-        _grantRole(ROLE_USER, _address);
     }
 
     function isUser() public view returns (bool) {
