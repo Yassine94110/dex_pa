@@ -7,10 +7,13 @@ import { AnimatedBeam } from '@/components/ui/animated-beam';
 import { User } from 'lucide-react';
 import Image from 'next/image';
 
-const Circle = forwardRef<
-  HTMLDivElement,
-  { className?: string; children?: React.ReactNode }
->(({ className, children }, ref) => {
+interface CircleProps {
+  className?: string;
+  children?: React.ReactNode;
+  ref: React.Ref<HTMLDivElement>;
+}
+
+const Circle = ({ className, children, ref }: CircleProps) => {
   return (
     <div
       ref={ref}
@@ -22,7 +25,7 @@ const Circle = forwardRef<
       {children}
     </div>
   );
-});
+};
 
 export function AnimatedBeamSwap() {
   const containerRef = useRef<HTMLDivElement>(null);
