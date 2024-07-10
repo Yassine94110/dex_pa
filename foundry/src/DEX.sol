@@ -73,9 +73,9 @@ contract DEX is AccessControl {
         require(msg.value >= swapFee, "notEnoughGas 1");
 
         if (_tokenIn == pool.assetOneAddress()) {
-            amountOut = pool.sellAssetOne{value: msg.value}(_amountIn);
+            amountOut = pool.sellAsset{value: msg.value}(_tokenIn, _amountIn);
         } else {
-            amountOut = pool.sellAssetTwo{value: msg.value}(_amountIn);
+            amountOut = pool.sellAsset{value: msg.value}(_tokenIn, _amountIn);
         }
 
         emit SwapExecuted(

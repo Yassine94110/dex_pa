@@ -11,7 +11,10 @@ contract PoolFactory {
 
     event PoolCreated(address indexed pool, address token1, address token2);
 
-    function createPool(address _token1, address _token2) external {
+    function createPool(
+        address _token1,
+        address _token2
+    ) external returns (address) {
         require(_token1 != _token2, "Tokens must be different");
         (address tokenA, address tokenB) = _token1 < _token2
             ? (_token1, _token2)
@@ -26,6 +29,7 @@ contract PoolFactory {
         poolRegistry[tokenA][tokenB] = address(pool);
 
         emit PoolCreated(address(pool), tokenA, tokenB);
+        return address(pool);
     }
 
     function getAllPools() external view returns (address[] memory) {
@@ -39,6 +43,10 @@ contract PoolFactory {
         (address tokenA, address tokenB) = _token1 < _token2
             ? (_token1, _token2)
             : (_token2, _token1);
-        return poolRegistry[tokenA][tokenB];
+        address pool = poolRegistry[tokenA][tokenB];
+        if (pool == address(0)) {
+            revert("Pool does not exist");
+        }
+        return pool;
     }
 }

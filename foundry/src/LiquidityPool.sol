@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ILiquidityPool} from "../src/ILiquidityPool.sol";
 import {console} from "forge-std/Test.sol";
 
 error Unauthorized();
@@ -187,29 +188,40 @@ contract LiquidityPool is ReentrancyGuard {
         emit liquidityRemoved(msg.sender, resultAssetOne, resultAssetTwo);
     }
 
+    function sellAsset(
+        address _asset,
+        uint256 _amount
+    ) public payable nonReentrant returns (uint256) {
+        if (_asset == assetOneAddress) {
+            return _sellAssetOne(_amount);
+        } else if (_asset == assetTwoAddress) {
+            return _sellAssetTwo(_amount);
+        } else {
+            revert assetNotCorrect();
+        }
+    }
+
     /**
      * @dev Function to sell the first asset and receive the second asset.
      * @param _amount The amount of the first asset to sell.
      */
-    function sellAssetOne(
-        uint256 _amount
-    ) external payable nonReentrant returns (uint256) {
-        //PAY THE ETH FEE
+    function _sellAssetOne(uint256 _amount) private returns (uint256) {
         if (msg.value < swapFee) {
             revert notEnoughGas();
         }
+        if (_amount > getAssetOne()) {
+            revert amountTooBig();
+        }
         yield += swapFee;
-        uint256 unrequiredFee = msg.value - swapFee; // In case the msg.sender sent more value than it is required
+
         //CALCULATION
-        uint256 n = getAssetTwo();
         uint256 assetOne = getAssetOne() + _amount;
-        uint256 assetTwo = liquidity / assetOne;
-        uint256 result = n - assetTwo;
+        uint256 newAssetTwo = liquidity / assetOne;
+        uint256 result = getAssetTwo() - newAssetTwo;
+
         //SENDING THE OPPOSITE ASSET TO THE CALLER FROM LIQUIDITY POOL
         IERC20(assetOneAddress).transferFrom(tx.origin, address(this), _amount);
         IERC20(assetTwoAddress).transfer(tx.origin, result);
-        (bool sent, ) = payable(tx.origin).call{value: unrequiredFee}("");
-        require(sent, "Failed to send Ether");
         //EVENTS
         emit priceChanged(assetOneAddress, assetOnePrice());
         emit priceChanged(assetTwoAddress, assetTwoPrice());
@@ -221,25 +233,24 @@ contract LiquidityPool is ReentrancyGuard {
      * @dev Function to sell the second asset and receive the first asset.
      * @param _amount The amount of the second asset to sell.
      */
-    function sellAssetTwo(
-        uint256 _amount
-    ) external payable nonReentrant returns (uint256) {
+    function _sellAssetTwo(uint256 _amount) private returns (uint256) {
         //PAY THE ETH FEE
         if (msg.value < swapFee) {
             revert notEnoughGas();
         }
+        if (_amount > getAssetTwo()) {
+            revert amountTooBig();
+        }
+
         yield += swapFee;
-        uint256 unrequiredFee = msg.value - swapFee; // In case the msg.sender sent more value than it is required
         //CALCULATION
-        uint256 n = getAssetOne();
         uint256 assetTwo = getAssetTwo() + _amount;
-        uint256 assetOne = liquidity / assetTwo;
-        uint256 result = n - assetOne;
+        uint256 newAssetOne = liquidity / assetTwo;
+        uint256 result = getAssetOne() - newAssetOne;
+
         //GETTING THE ASSET FROM CALLER TO THE LIQUIDITY POOL AND SENDING THE OPPOSITE ASSET TO THE CALLER FROM LIQUIDITY POOL
         IERC20(assetTwoAddress).transferFrom(tx.origin, address(this), _amount);
         IERC20(assetOneAddress).transfer(tx.origin, result);
-        (bool sent, ) = payable(tx.origin).call{value: unrequiredFee}("");
-        require(sent, "Failed to send Ether");
         //EVENTS
         emit priceChanged(assetOneAddress, assetOnePrice());
         emit priceChanged(assetTwoAddress, assetTwoPrice());
@@ -252,7 +263,7 @@ contract LiquidityPool is ReentrancyGuard {
      * @param _address The address of the asset.
      * @return The current balance of the asset.
      */
-    function getAssetBalace(address _address) public view returns (uint256) {
+    function getAssetBalance(address _address) public view returns (uint256) {
         return IERC20(_address).balanceOf(address(this));
     }
 
@@ -302,18 +313,6 @@ contract LiquidityPool is ReentrancyGuard {
         return lpTokenQuantity[_address];
     }
 
-    /**
-     * @dev Function to get the total liquidity in the pool.
-     * @return The total liquidity in the pool.
-     */
-    function getLiquidity() public view returns (uint256) {
-        return liquidity;
-    }
-
-    function getSwapFee() public view returns (uint256) {
-        return swapFee;
-    }
-
     function addressBalance() public view returns (uint256) {
         return address(this).balance;
     }
@@ -350,10 +349,6 @@ contract LiquidityPool is ReentrancyGuard {
     }
 
     mapping(address => uint256) public yieldTaken;
-
-    function yieldAmount() public view returns (uint256) {
-        return yield;
-    }
 
     function getYield() public {
         if (isTime() == false) {

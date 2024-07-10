@@ -2,6 +2,8 @@
 pragma solidity ^0.8.13;
 
 interface ILiquidityPool {
+    function initialLiquidity() external view returns (uint256);
+
     function addInitialLiquidity(
         uint256 _assetOneAmount,
         uint256 _assetTwoAmount
@@ -15,9 +17,10 @@ interface ILiquidityPool {
 
     function removeLiquidity(uint256 _amount) external;
 
-    function sellAssetOne(uint256 _amount) external payable returns (uint256);
-
-    function sellAssetTwo(uint256 _amount) external payable returns (uint256);
+    function sellAsset(
+        address asset,
+        uint256 _amount
+    ) external payable returns (uint256);
 
     function getSwapQuantity(
         address sellingAsset,
