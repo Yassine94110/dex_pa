@@ -54,20 +54,18 @@ export function Chart({ pool }: ChartProps) {
     },
   } satisfies ChartConfig;
 
-  const totalVisitors = useMemo(() => {
+  const totalTVL = useMemo(() => {
     return chartData.reduce((acc, curr) => acc + Number(curr.tvl), 0);
   }, []);
 
   return (
-    <Card className='flex flex-col bg-transparent border-0'>
-      <CardHeader className='items-center pb-0'>
+    <Card className='flex flex-col bg-transparent border-0 space-y-0 p-0'>
+      <CardHeader className='items-center space-y-0 p-0'>
         <CardTitle>
           {assetOne.symbol}/{assetTwo.symbol}
-          {/* {assetOne.name}({assetOne.symbol}) - {assetTwo.name}({assetTwo.symbol}
-          ) */}
         </CardTitle>
       </CardHeader>
-      <CardContent className='flex-1 pb-0'>
+      <CardContent className='flex-1 p-0'>
         <ChartContainer
           config={chartConfig}
           className='mx-auto aspect-square min-h-[600px]'
@@ -99,7 +97,7 @@ export function Chart({ pool }: ChartProps) {
                           y={viewBox.cy}
                           className='fill-foreground text-3xl font-bold'
                         >
-                          {totalVisitors.toLocaleString()}
+                          {totalTVL.toLocaleString()}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
