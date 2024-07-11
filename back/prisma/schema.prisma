@@ -20,5 +20,8 @@ model User {
 model Token {
   id     Int      @id @default(autoincrement())
   address String   @unique
+  name    String
+  ticker  String
+  supply  String
   date    DateTime @default(now())
 }
