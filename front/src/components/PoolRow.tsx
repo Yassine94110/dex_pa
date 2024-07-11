@@ -1,29 +1,25 @@
+'use client';
+
 import Image from 'next/image';
 import { TableCell, TableRow } from './ui/table';
+import { useRouter } from 'next/navigation';
+import { Pool } from '@/lib/pool.action';
 
 interface PoolRowProps {
   number: number;
-  token1: string;
-  token2: string;
-  transactions: number;
+  pool: Pool;
   img1: string;
   img2: string;
-  assetOneLock: bigint;
-  assetTwoLock: bigint;
 }
 
-export const PoolRow = ({
-  number,
-  token1,
-  token2,
-  transactions,
-  img1,
-  img2,
-  assetOneLock,
-  assetTwoLock,
-}: PoolRowProps) => {
+export const PoolRow = ({ pool, number, img1, img2 }: PoolRowProps) => {
+  const router = useRouter();
+  const { assetOneLock, assetTwoLock, assetOne, assetTwo } = pool;
   return (
-    <TableRow>
+    <TableRow
+      onClick={() => router.push(`/pool/${pool.address}`)}
+      className='cursor-pointer'
+    >
       <TableCell className='font-medium'>{number}</TableCell>
       <TableCell>
         <div className='flex items-center uppercase gap-4'>
@@ -32,7 +28,7 @@ export const PoolRow = ({
               <div className='relative'>
                 <Image
                   src={img1}
-                  alt={`${token1}/${token2}-logo`}
+                  alt={`${assetOne.symbol}-logo`}
                   layout='fixed'
                   width={30}
                   height={30}
@@ -43,7 +39,7 @@ export const PoolRow = ({
                 />
                 <Image
                   src={img2}
-                  alt={`${token1}/${token2}-logo`}
+                  alt={`${assetTwo.symbol}-logo`}
                   layout='fixed'
                   width={30}
                   height={30}
@@ -55,12 +51,12 @@ export const PoolRow = ({
               </div>
             </div>
           </div>
-          {token1}/{token2}
+          {assetOne.symbol}/{assetTwo.symbol}
         </div>
       </TableCell>
-      <TableCell>{transactions}</TableCell>
-      <TableCell>{assetOneLock}</TableCell>
-      <TableCell>{assetTwoLock}</TableCell>
+      <TableCell>{232342}</TableCell>
+      <TableCell>{Number(assetOneLock / BigInt(10 ** 18))}</TableCell>
+      <TableCell>{Number(assetTwoLock / BigInt(10 ** 18))}</TableCell>
     </TableRow>
   );
 };

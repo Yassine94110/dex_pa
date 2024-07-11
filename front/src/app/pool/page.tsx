@@ -7,6 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { getAllPools, Pool } from '@/lib/pool.action';
+import Link from 'next/link';
 
 const page = async () => {
   const allPools = await getAllPools();
@@ -27,15 +28,11 @@ const page = async () => {
           <TableBody className=''>
             {allPools.map((pool: Pool, index: number) => (
               <PoolRow
-                key={index}
+                key={pool.address}
                 number={index + 1}
-                token1={pool.assetOne.symbol}
-                token2={pool.assetTwo.symbol}
-                transactions={2459935}
                 img1='/logo-glx1.webp'
                 img2='/logo-glx1.webp'
-                assetOneLock={pool.assetOneLock / BigInt(10 ** 18)}
-                assetTwoLock={pool.assetTwoLock / BigInt(10 ** 18)}
+                pool={pool}
               />
             ))}
           </TableBody>
