@@ -19,36 +19,8 @@ contract DexTest is Test {
         vm.startPrank(user1, user1);
         Dex = new DEX();
         Dex.grantAdmin(address(this));
-    }
-
-    // function test_createLiquidityPool() public {
-    //     Dex.createLiquidityPool(address(gsToken), address(japanToken));
-
-    //     // Verify if the pool is created by checking the pools list
-    //     address[] memory pools = Dex.getPools();
-    //     assertEq(pools.length, 1, "Liquidity pool should be created");
-    //     console.log("Pool created: ", pools[0]);
-    // }
-    function test_createLiquidityPoolAndAddLiquidissty() public {
-        // Dex.createLiquidityPool(address(gsToken), address(japanToken));
-        // Verify if the pool is created by checking the pools list
-        // address[] memory pools = Dex.getPools();
-        // assertEq(pools.length, 1, "Liquidity pool should be created");
-        // console.log("Pool created: ", pools[0]);
-        // gsToken.approve(address(Dex), 100);
-        // japanToken.approve(address(Dex), 100);
-        // // not the owner need to set tx.origin
-        // Dex.addInitialLiquidity(Dex.getPools()[0], 100, 100);
-        // // check balance of the msg.sender
-        // console.log(
-        //     "Balance of the msg.sender: ",
-        //     gsToken.balanceOf(address(this))
-        // );
-        // console.log(
-        //     "Balance of the msg.sender: ",
-        //     japanToken.balanceOf(address(this))
-        // );
-        // console.log("Liquidity added");
+        Dex.grantAdmin(address(user1));
+        vm.deal(user1, 100 ether);
     }
 
     function test_CreatePool() public {
@@ -137,7 +109,6 @@ contract DexTest is Test {
         Dex.removeLiquidity(address(pools[0]), 100);
 
         uint gsTokenAmountAfter = gsToken.balanceOf(address(user1));
-        uint japanTokenAmountAfter = japanToken.balanceOf(address(user1));
 
         console.log(
             "Balance of the msg.sender: after remove liquidity",
@@ -150,5 +121,63 @@ contract DexTest is Test {
 
         // assert if eq the balance of the user before adding liquidity
         assertEq(gsTokenAmountBefore + 100, gsTokenAmountAfter);
+    }
+
+    function test_createLiquidityPoolAndAddLiquidityAndSwap() public {
+        gsToken = new GSToken(maxSupply);
+        japanToken = new JapanToken(maxSupply);
+        Dex.createLiquidityPool(address(gsToken), address(japanToken));
+        // Verify if the pool is created by checking the pools list
+        address[] memory pools = Dex.getPools();
+        console.log("Pool created: ", pools[0]);
+        gsToken.approve(address(pools[0]), 100);
+        japanToken.approve(address(pools[0]), 100);
+        // check allowance pools[0]
+        // console.log(
+        //     "Balance of the msg.sender: ",
+        //     gsToken.balanceOf(address(user1))
+        // );
+        // console.log(
+        //     "Balance of the msg.sender: ",
+        //     japanToken.balanceOf(address(user1))
+        // );
+        // console.log("poolFactory", Dex.getPoolFactory());
+
+        // Dex.addInitialLiquidity(Dex.getPools()[0], 100, 100);
+        Dex.addInitialLiquidity(address(pools[0]), 100, 100);
+        // check balance of the msg.sender
+        // console.log(
+        //     "Balance of the msg.sender: ",
+        //     gsToken.balanceOf(address(user1))
+        // );
+        // console.log(
+        //     "Balance of the msg.sender: ",
+        //     japanToken.balanceOf(address(user1))
+        // );
+        // uint gsTokenAmountBefore = gsToken.balanceOf(address(user1));
+        // uint japanTokenAmountBefore = japanToken.balanceOf(address(user1));
+        // approve japan token
+        japanToken.approve(address(pools[0]), 50);
+        // swap is  payable send  0.001 ether
+        console.log(
+            "Balance of the msg.sender: before swap",
+            gsToken.balanceOf(address(user1))
+        );
+        // gsToken before
+        uint gsTokenAmountBefore = gsToken.balanceOf(address(user1));
+
+        Dex.swap{value: 0.001 ether}(
+            address(pools[0]),
+            address(japanToken),
+            50
+        );
+        uint gsTokenAmountAfter = gsToken.balanceOf(address(user1));
+
+        assert(gsTokenAmountBefore < gsTokenAmountAfter);
+        // check balance of the msg.sender
+        console.log(
+            "Balance of the msg.sender: after swap",
+            gsToken.balanceOf(address(user1))
+        );
     }
 }

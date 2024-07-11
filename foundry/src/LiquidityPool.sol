@@ -320,6 +320,10 @@ contract LiquidityPool is ReentrancyGuard {
     function addressBalance() public view returns (uint256) {
         return address(this).balance;
     }
+    // getSwapFee
+    function getSwapFee() public view returns (uint256) {
+        return swapFee;
+    }
 
     function getSwapQuantity(
         address sellingAsset,
