@@ -62,10 +62,14 @@ contract LiquidityPool is ReentrancyGuard {
      * @param _assetOneAddress The address of the first asset.
      * @param _assetTwoAddress The address of the second asset.
      */
-    constructor(address _assetOneAddress, address _assetTwoAddress) {
+    constructor(
+        address _assetOneAddress,
+        address _assetTwoAddress,
+        address _owner
+    ) {
         assetOneAddress = _assetOneAddress;
         assetTwoAddress = _assetTwoAddress;
-        owner = msg.sender;
+        owner = _owner;
         swapFee = 1000000000000000; // 0.001 ether
     }
 
@@ -89,7 +93,7 @@ contract LiquidityPool is ReentrancyGuard {
     function addInitialLiquidity(
         uint256 _assetOneAmount,
         uint256 _assetTwoAmount
-    ) public {
+    ) public onlyOwner {
         if (initialLiquidityProvidedTime[owner] > 0) {
             revert initialLiquidityAlreadyProvided();
         }

@@ -24,7 +24,7 @@ contract PoolFactory {
             "Pool already exists"
         );
 
-        LiquidityPool pool = new LiquidityPool(tokenA, tokenB);
+        LiquidityPool pool = new LiquidityPool(tokenA, tokenB, msg.sender);
         allPools.push(address(pool));
         poolRegistry[tokenA][tokenB] = address(pool);
 
