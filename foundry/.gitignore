@@ -1,6 +1,7 @@
 # Compiler files
 cache/
 out/
+.gitmodules
 
 # Ignores development broadcast logs
 !/broadcast

@@ -2,16 +2,12 @@
 
 pragma solidity ^0.8.13;
 
-import "@openzeppelin/contracts/interfaces/IERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ILiquidityPool} from "../src/ILiquidityPool.sol";
 import {console} from "forge-std/Test.sol";
 
-<<<<<<< HEAD
-=======
-error assetNotCorrect();
 error Unauthorized();
->>>>>>> origin/develop
-
 error assetNotCorrect();
 error notEnoughTokens();
 error notEnoughGas();
@@ -51,20 +47,13 @@ contract LiquidityPool is ReentrancyGuard {
     uint256 public swapFee;
     address public immutable owner;
 
-
-
     /**
      * @dev Modifier to restrict functions only to the owner.
      */
     modifier onlyOwner() {
-<<<<<<< HEAD
-     //msg.sender == owner;
-     require(msg.sender==owner,"not owner");
-=======
         if (msg.sender != owner) {
             revert Unauthorized();
         }
->>>>>>> origin/develop
         _;
     }
 
@@ -73,10 +62,14 @@ contract LiquidityPool is ReentrancyGuard {
      * @param _assetOneAddress The address of the first asset.
      * @param _assetTwoAddress The address of the second asset.
      */
-    constructor(address _assetOneAddress, address _assetTwoAddress) {
+    constructor(
+        address _assetOneAddress,
+        address _assetTwoAddress,
+        address _owner
+    ) {
         assetOneAddress = _assetOneAddress;
         assetTwoAddress = _assetTwoAddress;
-        owner = msg.sender;
+        owner = _owner;
         swapFee = 1000000000000000; // 0.001 ether
     }
 
@@ -107,8 +100,16 @@ contract LiquidityPool is ReentrancyGuard {
         initialLiquidityProvidedTime[tx.origin] = block.timestamp;
 
         // SENDS THE TOKENS TO THE LIQUIDITY POOL
-        IERC20(assetOneAddress).transferFrom(tx.origin, address(this), _assetOneAmount);
-        IERC20(assetTwoAddress).transferFrom(tx.origin, address(this), _assetTwoAmount);
+        IERC20(assetOneAddress).transferFrom(
+            tx.origin,
+            address(this),
+            _assetOneAmount
+        );
+        IERC20(assetTwoAddress).transferFrom(
+            tx.origin,
+            address(this),
+            _assetTwoAmount
+        );
 
         // SET THE INITIAL LIQUIDITY
         initialLiquidity = _assetOneAmount * _assetTwoAmount;
@@ -142,11 +143,16 @@ contract LiquidityPool is ReentrancyGuard {
         IERC20(_asset).transferFrom(tx.origin, address(this), _amount);
 
         // give lp tokens to new liquidity provider
-        lpTokenQuantity[tx.origin] += (_amount * amountOfOppositeTokenNeeded(_asset, _amount));
+        lpTokenQuantity[tx.origin] += (_amount *
+            amountOfOppositeTokenNeeded(_asset, _amount));
         liquidity += (_amount * amountOfOppositeTokenNeeded(_asset, _amount));
 
         // EMIT EVENT
-        emit liquidityAdded(tx.origin, amountOfOppositeTokenNeeded(_asset, _amount), _amount);
+        emit liquidityAdded(
+            tx.origin,
+            amountOfOppositeTokenNeeded(_asset, _amount),
+            _amount
+        );
     }
 
     /**
@@ -156,15 +162,19 @@ contract LiquidityPool is ReentrancyGuard {
     function removeLiquidity(uint256 _amount) public nonReentrant {
         uint256 userLpTokens = lpTokenQuantity[tx.origin];
         uint256 percentageOfLiquidity = (userLpTokens * 1 ether) / liquidity; // How much user owns out of all Liquidity in percentage
-        uint256 percentageOfUserLiquidity = (percentageOfLiquidity * _amount) / 100; // How much out of their liquidity they want to withdraw in percentage
-        uint256 resultAssetOne = (percentageOfUserLiquidity * getAssetOne()) / 1 ether;
-        uint256 resultAssetTwo = (percentageOfUserLiquidity * getAssetTwo()) / 1 ether;
+        uint256 percentageOfUserLiquidity = (percentageOfLiquidity * _amount) /
+            100; // How much out of their liquidity they want to withdraw in percentage
+        uint256 resultAssetOne = (percentageOfUserLiquidity * getAssetOne()) /
+            1 ether;
+        uint256 resultAssetTwo = (percentageOfUserLiquidity * getAssetTwo()) /
+            1 ether;
         // condition for owner, because of the initial liquidity timer
         if (
             (tx.origin == owner) &&
             (isTimeInitialLiquidity() == false) &&
             //the owner has the ability to withdraw liquidity if it wasn't part of initial liquidity
-            ((lpTokenQuantity[tx.origin] - (resultAssetOne * resultAssetTwo)) < initialLiquidity)
+            ((lpTokenQuantity[tx.origin] - (resultAssetOne * resultAssetTwo)) <
+                initialLiquidity)
         ) {
             revert notEnoughTokens();
         }
@@ -182,27 +192,40 @@ contract LiquidityPool is ReentrancyGuard {
         emit liquidityRemoved(msg.sender, resultAssetOne, resultAssetTwo);
     }
 
+    function sellAsset(
+        address _asset,
+        uint256 _amount
+    ) public payable nonReentrant returns (uint256) {
+        if (_asset == assetOneAddress) {
+            return _sellAssetOne(_amount);
+        } else if (_asset == assetTwoAddress) {
+            return _sellAssetTwo(_amount);
+        } else {
+            revert assetNotCorrect();
+        }
+    }
+
     /**
      * @dev Function to sell the first asset and receive the second asset.
      * @param _amount The amount of the first asset to sell.
      */
-    function sellAssetOne(uint256 _amount) external payable nonReentrant returns (uint256) {
-        //PAY THE ETH FEE
+    function _sellAssetOne(uint256 _amount) private returns (uint256) {
         if (msg.value < swapFee) {
             revert notEnoughGas();
         }
+        if (_amount > getAssetOne()) {
+            revert amountTooBig();
+        }
         yield += swapFee;
-        uint256 unrequiredFee = msg.value - swapFee; // In case the msg.sender sent more value than it is required
+
         //CALCULATION
-        uint256 n = getAssetTwo();
         uint256 assetOne = getAssetOne() + _amount;
-        uint256 assetTwo = liquidity / assetOne;
-        uint256 result = n - assetTwo;
+        uint256 newAssetTwo = liquidity / assetOne;
+        uint256 result = getAssetTwo() - newAssetTwo;
+
         //SENDING THE OPPOSITE ASSET TO THE CALLER FROM LIQUIDITY POOL
         IERC20(assetOneAddress).transferFrom(tx.origin, address(this), _amount);
         IERC20(assetTwoAddress).transfer(tx.origin, result);
-        (bool sent, ) = payable(tx.origin).call{value: unrequiredFee}("");
-        require(sent, "Failed to send Ether");
         //EVENTS
         emit priceChanged(assetOneAddress, assetOnePrice());
         emit priceChanged(assetTwoAddress, assetTwoPrice());
@@ -214,23 +237,24 @@ contract LiquidityPool is ReentrancyGuard {
      * @dev Function to sell the second asset and receive the first asset.
      * @param _amount The amount of the second asset to sell.
      */
-    function sellAssetTwo(uint256 _amount) external payable nonReentrant returns (uint256) {
+    function _sellAssetTwo(uint256 _amount) private returns (uint256) {
         //PAY THE ETH FEE
         if (msg.value < swapFee) {
             revert notEnoughGas();
         }
+        if (_amount > getAssetTwo()) {
+            revert amountTooBig();
+        }
+
         yield += swapFee;
-        uint256 unrequiredFee = msg.value - swapFee; // In case the msg.sender sent more value than it is required
         //CALCULATION
-        uint256 n = getAssetOne();
         uint256 assetTwo = getAssetTwo() + _amount;
-        uint256 assetOne = liquidity / assetTwo;
-        uint256 result = n - assetOne;
+        uint256 newAssetOne = liquidity / assetTwo;
+        uint256 result = getAssetOne() - newAssetOne;
+
         //GETTING THE ASSET FROM CALLER TO THE LIQUIDITY POOL AND SENDING THE OPPOSITE ASSET TO THE CALLER FROM LIQUIDITY POOL
         IERC20(assetTwoAddress).transferFrom(tx.origin, address(this), _amount);
         IERC20(assetOneAddress).transfer(tx.origin, result);
-        (bool sent, ) = payable(tx.origin).call{value: unrequiredFee}("");
-        require(sent, "Failed to send Ether");
         //EVENTS
         emit priceChanged(assetOneAddress, assetOnePrice());
         emit priceChanged(assetTwoAddress, assetTwoPrice());
@@ -243,7 +267,7 @@ contract LiquidityPool is ReentrancyGuard {
      * @param _address The address of the asset.
      * @return The current balance of the asset.
      */
-    function getAssetBalace(address _address) public view returns (uint256) {
+    function getAssetBalance(address _address) public view returns (uint256) {
         return IERC20(_address).balanceOf(address(this));
     }
 
@@ -284,31 +308,27 @@ contract LiquidityPool is ReentrancyGuard {
      * @param _address The address of the LP token holder.
      * @return The quantity of LP tokens owned by the address.
      */
-    function getLpTokenQuantity(address _address) public view returns (uint256) {
+    function getLpTokenQuantity(
+        address _address
+    ) public view returns (uint256) {
         if (msg.sender != owner && _address == msg.sender) {
             revert addressNotCorrect();
         }
         return lpTokenQuantity[_address];
     }
 
-    /**
-     * @dev Function to get the total liquidity in the pool.
-     * @return The total liquidity in the pool.
-     */
-    function getLiquidity() public view returns (uint256) {
-        return liquidity;
+    function addressBalance() public view returns (uint256) {
+        return address(this).balance;
     }
-
-
+    // getSwapFee
     function getSwapFee() public view returns (uint256) {
         return swapFee;
     }
 
-    function addressBalance() public view returns (uint256) {
-        return address(this).balance;
-    }
-
-    function getSwapQuantity(address sellingAsset, uint256 _amount) public view returns (uint256) {
+    function getSwapQuantity(
+        address sellingAsset,
+        uint256 _amount
+    ) public view returns (uint256) {
         if (sellingAsset == assetOneAddress) {
             uint256 newAssetOne = getAssetOne() + _amount;
             uint256 newAssetTwo = liquidity / newAssetOne;
@@ -336,13 +356,7 @@ contract LiquidityPool is ReentrancyGuard {
         return amountNeeded;
     }
 
-
     mapping(address => uint256) public yieldTaken;
-
-
-    function yieldAmount() public view returns (uint256) {
-        return yield;
-    }
 
     function getYield() public {
         if (isTime() == false) {
@@ -351,10 +365,10 @@ contract LiquidityPool is ReentrancyGuard {
         lastYieldFarmedTime[msg.sender] = block.timestamp; // Reentrancy guard
         uint256 yieldSoFar = yieldTaken[msg.sender];
         uint256 userLiquidity = (lpTokenQuantity[msg.sender] * 100) / liquidity;
-        uint256 availableYield = ((yield - ((yieldSoFar * 100) / userLiquidity)) * userLiquidity) /
-            100;
+        uint256 availableYield = ((yield -
+            ((yieldSoFar * 100) / userLiquidity)) * userLiquidity) / 100;
         if (availableYield > address(this).balance) {
-            revert notEnoughTokens(); 
+            revert notEnoughTokens();
         }
         yieldTaken[msg.sender] += availableYield;
         payable(msg.sender).transfer(availableYield);
@@ -364,7 +378,6 @@ contract LiquidityPool is ReentrancyGuard {
 
     mapping(address => uint256) public lastYieldFarmedTime;
     mapping(address => uint256) public initialLiquidityProvidedTime;
-
 
     function isTime() public view returns (bool) {
         lastYieldFarmedTime[msg.sender];
@@ -376,20 +389,18 @@ contract LiquidityPool is ReentrancyGuard {
         }
     }
 
- 
     function isTimeInitialLiquidity() public view returns (bool) {
-        if (block.timestamp > (initialLiquidityProvidedTime[msg.sender] + 365 days)) {
+        if (
+            block.timestamp >
+            (initialLiquidityProvidedTime[msg.sender] + 365 days)
+        ) {
             return true;
         } else {
             return false;
         }
     }
 
+    fallback() external payable {}
 
-    fallback() external payable {
-   }
-
- 
-    receive() external payable {
-    }
+    receive() external payable {}
 }

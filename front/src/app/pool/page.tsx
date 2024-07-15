@@ -6,8 +6,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { getAllPools, Pool } from '@/lib/pool.action';
+import Link from 'next/link';
 
-const page = () => {
+const page = async () => {
+  const allPools = await getAllPools();
+  console.log(allPools);
   return (
     <div className='flex flex-col gap-4 justify-center'>
       <div className='rounded-lg bg-transparent flex flex-col h-[80vh] overflow-auto'>
@@ -17,20 +21,18 @@ const page = () => {
               <TableHead className='w-[20px]'>#</TableHead>
               <TableHead>Pool</TableHead>
               <TableHead>Transactions</TableHead>
-              <TableHead>TVL</TableHead>
+              <TableHead>Asset1Lock</TableHead>
+              <TableHead>Asset2Lock</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className=''>
-            {[...Array(20)].map((_, index) => (
+            {allPools.map((pool: Pool, index: number) => (
               <PoolRow
-                key={index}
+                key={pool.address}
                 number={index + 1}
-                token1='ETH'
-                token2='BTC'
-                transactions={2459935}
-                tvl={3596300000}
-                img1='/ethereum-cryptocurrency.svg'
-                img2='/bitcoin-cryptocurrency.svg'
+                img1='/logo-glx1.webp'
+                img2='/logo-glx1.webp'
+                pool={pool}
               />
             ))}
           </TableBody>
