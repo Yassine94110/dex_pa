@@ -1,5 +1,6 @@
 import { AddLiquidity } from '@/components/AddLiquidity';
 import { Chart } from '@/components/Chart';
+import { isRegistered } from '@/lib/dex.action';
 import { getPoolInformation } from '@/lib/pool.action';
 
 const page = async ({ params }: { params: { id: string } }) => {
@@ -31,8 +32,8 @@ const page = async ({ params }: { params: { id: string } }) => {
           </div>
         </div>
         <h1 className='text-2xl font-bold my-8'>Add Liquidity</h1>
-        <div className='pl-4'>
-          <AddLiquidity />
+        <div className='pl-4 max-w-80'>
+          <AddLiquidity pool={pool} />
         </div>
       </div>
       <Chart pool={pool} />

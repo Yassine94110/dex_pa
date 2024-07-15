@@ -3,7 +3,7 @@ import './globals.css';
 import { headers } from 'next/headers';
 import { cookieToInitialState } from 'wagmi';
 import Web3ModalProvider from '@/lib/context';
-import { config } from '@/lib/client.config';
+import { config } from '@/lib/config';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Navbar } from '@/components/Navbar';
 import RadialGradient from '@/components/ui/radial-gradient';

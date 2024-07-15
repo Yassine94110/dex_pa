@@ -2,7 +2,7 @@
 
 import { readContract } from '@wagmi/core';
 import { dexAbi } from './abi/dex.abi';
-import { config } from './back.config';
+import { config } from './config';
 import { liquityPoolsAbi } from './abi/liquidityPools.abi';
 import { erc20Abi } from 'viem';
 
@@ -24,7 +24,7 @@ export interface Asset {
 export const getAllPools = async () => {
   const poolsAddress = (await readContract(config, {
     abi: dexAbi,
-    address: process.env.DEX_CONTRACT! as `0x${string}`,
+    address: process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`,
     functionName: 'getPools',
   })) as `0x${string}`[];
 
@@ -101,4 +101,18 @@ export const getAssetInformation = async (assetAddress: `0x${string}`) => {
   });
 
   return { name, symbol };
+};
+
+export const getOppositeAmount = async (
+  poolAddress: `0x${string}`,
+  tokenAddress: `0x${string}`,
+  amount: number
+) => {
+  const oppositeAmount = (await readContract(config, {
+    address: poolAddress,
+    abi: liquityPoolsAbi,
+    functionName: 'amountOfOppositeTokenNeeded',
+    args: [tokenAddress, BigInt(amount)],
+  })) as bigint;
+  return String(oppositeAmount);
 };
