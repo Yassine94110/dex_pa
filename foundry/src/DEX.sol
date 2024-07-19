@@ -25,11 +25,15 @@ contract DEX is AccessControl {
     constructor() {
         owner = msg.sender;
         _grantRole(ROLE_ADMIN, msg.sender);
+        _grantRole(ROLE_USER, msg.sender);
         poolFactory = new PoolFactory();
     }
 
     modifier hasNoRole() {
-        !hasRole(ROLE_USER, msg.sender) && !hasRole(ROLE_ADMIN, msg.sender);
+        require(
+            !hasRole(ROLE_USER, msg.sender) && !hasRole(ROLE_ADMIN, msg.sender),
+            "User already has a role"
+        );
         _;
     }
 
@@ -44,7 +48,7 @@ contract DEX is AccessControl {
         address _pool,
         uint256 _assetOneAmount,
         uint256 _assetTwoAmount
-    ) public {
+    ) public onlyRole(ROLE_ADMIN) {
         require(
             hasRole(ROLE_USER, msg.sender) || hasRole(ROLE_ADMIN, msg.sender),
             "userNotAuthorized"
@@ -73,23 +77,17 @@ contract DEX is AccessControl {
         address _pool,
         address _tokenIn,
         uint256 _amountIn
-    ) public payable returns (uint256 amountOut) {
+    ) public payable onlyRole(ROLE_USER) returns (uint256 amountOut) {
         ILiquidityPool pool = ILiquidityPool(_pool);
-        require(
-            hasRole(ROLE_USER, msg.sender) && !hasRole(ROLE_BANNED, msg.sender),
-            "userNotAuthorized"
-        );
         require(
             _tokenIn == pool.assetOneAddress() ||
                 _tokenIn == pool.assetTwoAddress(),
             "invalidToken for this pool address"
         );
-
         uint256 swapFee = pool.getSwapFee();
+
         require(msg.value >= swapFee, "notEnoughGas");
-
         amountOut = pool.sellAsset{value: msg.value}(_tokenIn, _amountIn);
-
         emit SwapExecuted(
             msg.sender,
             _tokenIn,
@@ -120,6 +118,7 @@ contract DEX is AccessControl {
 
     function ban(address _bannedUser) public onlyRole(ROLE_ADMIN) {
         renounceRole(ROLE_USER, _bannedUser);
+        renounceRole(ROLE_ADMIN, _bannedUser);
         _grantRole(ROLE_BANNED, _bannedUser);
     }
 
@@ -134,6 +133,10 @@ contract DEX is AccessControl {
 
     function isUser() public view returns (bool) {
         return hasRole(ROLE_USER, msg.sender);
+    }
+    // get poolFactory address
+    function getPoolFactory() public view returns (address) {
+        return address(poolFactory);
     }
 
     //
