@@ -6,23 +6,19 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
 
-import {
-  useAccount,
-  useWriteContract,
-  useWaitForTransactionReceipt,
-  useReadContract,
-  usePrepareTransactionRequest,
-  type BaseError,
-} from 'wagmi';
-import { dexAbi } from '@/lib/abi/dex.abi';
+import { useAccount } from 'wagmi';
+import { useAtom } from 'jotai';
+import { tokenAtom } from '@/lib/atom';
 import { RegisterToDexButton } from './RegisterToDexButton';
 import { isRegistered } from '@/lib/dex.action';
+import { ButtonAddLiquidity } from './ButtonAddLiquidity';
+import { useDebouncedCallback } from 'use-debounce';
 
 export const AddLiquidity = ({ pool }: { pool: Pool }) => {
-  const { assetOneLock, assetTwoLock, assetOne, assetTwo } = pool;
-  const [token1, setToken1] = useState<string>('');
-  const [token2, setToken2] = useState<string>('');
+  const { assetOne, assetTwo } = pool;
+  const [token, setToken] = useAtom(tokenAtom);
   const [isRegister, setIsRegistered] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const account = useAccount();
 
@@ -30,72 +26,42 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
     if (account.status === 'connected') {
       isRegistered(account.address).then((registered) => {
         setIsRegistered(registered);
-        console.log('registered', registered);
       });
     }
-  }, [account]);
-
-  const {
-    data: hash,
-    writeContract,
-    isPending,
-    isSuccess: isConfirmed,
-    error,
-  } = useWriteContract();
-
-  const { isLoading, isSuccess } = useWaitForTransactionReceipt({
-    hash,
-  });
-
-  const handleClick = async () => {
-    console.log('assetOne', assetOne.address);
-    console.log('assetTwo', assetTwo.address);
-    console.log('token1', BigInt(token1) * BigInt(10 ** 18));
-    // console.log('dex_contract', process.env.DEX_CONTRACT! as `0x${string}`);
-    writeContract({
-      abi: dexAbi,
-      address: process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`,
-      functionName: 'addLiquidity',
-      args: [
-        assetOne.address,
-        assetTwo.address,
-        BigInt(token1) * BigInt(10 ** 18),
-      ],
-    });
-  };
+  }, [account.address, account]);
 
   const handleChangeToken1 = async (e: ChangeEvent<HTMLInputElement>) => {
+    setLoading(true);
     const value = Number(e.target.value);
     if (value < 0 && isNaN(value)) {
-      setToken1('');
-      setToken2('');
+      setToken({ value: '', oppositeAmount: '' });
       return;
     }
-    setToken1(String(value));
+    setToken((prev) => ({ ...prev, value: String(value) }));
     const oppositeAmount = await getOppositeAmount(
       pool.address,
       pool.assetOne.address,
       value
     );
-    setToken2(oppositeAmount);
+    setToken((prev) => ({ ...prev, oppositeAmount }));
+    setLoading(false);
   };
-
   const handleChangeToken2 = async (e: ChangeEvent<HTMLInputElement>) => {
+    setLoading(true);
     const value = Number(e.target.value);
-    if (value < 0) {
-      setToken1('');
-      setToken2('');
+    if (value < 0 && isNaN(value)) {
+      setToken({ value: '', oppositeAmount: '' });
       return;
     }
-    setToken2(String(value));
+    setToken((prev) => ({ ...prev, oppositeAmount: value.toString() }));
     const oppositeAmount = await getOppositeAmount(
       pool.address,
       pool.assetTwo.address,
       value
     );
-    setToken1(oppositeAmount);
+    setToken((prev) => ({ ...prev, value: oppositeAmount }));
+    setLoading(false);
   };
-
   return (
     <div className='flex flex-col gap-4'>
       <div className='grid w-full max-w-sm items-center gap-1.5'>
@@ -104,7 +70,7 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
           type='string'
           placeholder='0.00'
           onChange={(e) => handleChangeToken1(e)}
-          value={token1}
+          value={token.value}
         />
       </div>
       <div className='grid w-full max-w-sm items-center gap-1.5'>
@@ -113,32 +79,19 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
           type='string'
           placeholder='0.00'
           onChange={(e) => handleChangeToken2(e)}
-          value={token2}
+          value={token.oppositeAmount}
         />
       </div>
       {account.status === 'connected' ? (
         <div>
-          {isPending ? (
-            <Button disabled variant='ghost'>
-              Loading
-            </Button>
-          ) : isRegister ? (
-            <Button onClick={() => handleClick()}>Add Liquidity</Button>
+          {isRegister ? (
+            <ButtonAddLiquidity pool={pool} />
           ) : (
             <RegisterToDexButton setIsRegistered={setIsRegistered} />
           )}
         </div>
       ) : (
         <Button disabled>Connect Wallet First</Button>
-      )}
-
-      {hash && <div>Transaction Hash: {hash}</div>}
-      {isSuccess && <div>Waiting for confirmation...</div>}
-      {isConfirmed && <div>Transaction confirmed.</div>}
-      {error && (
-        <div className='text-xs italic text-red-900'>
-          Error: {(error as BaseError).shortMessage || error.message}
-        </div>
       )}
     </div>
   );

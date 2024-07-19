@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Navbar } from '@/components/Navbar';
 import RadialGradient from '@/components/ui/radial-gradient';
 import { Vortex } from '@/components/ui/vortex';
+import { Provider } from 'jotai';
 
 export const metadata: Metadata = {
   title: 'Galaxy Swap',
@@ -31,21 +32,23 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Web3ModalProvider initialState={initialState}>
-            <Navbar />
-            <main className='relative overflow-hidden flex flex-col max-h-[100vh] h-[100vh]'>
-              <Vortex
-                backgroundColor='black'
-                rangeY={100}
-                particleCount={200}
-                baseHue={80}
-                className='px-2 md:px-10  pb-4 pt-32'
-              >
-                {children}
-              </Vortex>
-            </main>
-            <RadialGradient />
-          </Web3ModalProvider>
+          <Provider>
+            <Web3ModalProvider initialState={initialState}>
+              <Navbar />
+              <main className='relative overflow-hidden flex flex-col max-h-[100vh] h-[100vh]'>
+                <Vortex
+                  backgroundColor='black'
+                  rangeY={100}
+                  particleCount={200}
+                  baseHue={80}
+                  className='px-2 md:px-10  pb-4 pt-32'
+                >
+                  {children}
+                </Vortex>
+              </main>
+              <RadialGradient />
+            </Web3ModalProvider>
+          </Provider>
         </ThemeProvider>
       </body>
     </html>
