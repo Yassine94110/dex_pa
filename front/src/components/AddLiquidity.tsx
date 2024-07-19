@@ -12,13 +12,11 @@ import { tokenAtom } from '@/lib/atom';
 import { RegisterToDexButton } from './RegisterToDexButton';
 import { isRegistered } from '@/lib/dex.action';
 import { ButtonAddLiquidity } from './ButtonAddLiquidity';
-import { useDebouncedCallback } from 'use-debounce';
 
 export const AddLiquidity = ({ pool }: { pool: Pool }) => {
   const { assetOne, assetTwo } = pool;
   const [token, setToken] = useAtom(tokenAtom);
   const [isRegister, setIsRegistered] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const account = useAccount();
 
@@ -31,7 +29,6 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
   }, [account.address, account]);
 
   const handleChangeToken1 = async (e: ChangeEvent<HTMLInputElement>) => {
-    setLoading(true);
     const value = Number(e.target.value);
     if (value < 0 && isNaN(value)) {
       setToken({ value: '', oppositeAmount: '' });
@@ -44,10 +41,8 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
       value
     );
     setToken((prev) => ({ ...prev, oppositeAmount }));
-    setLoading(false);
   };
   const handleChangeToken2 = async (e: ChangeEvent<HTMLInputElement>) => {
-    setLoading(true);
     const value = Number(e.target.value);
     if (value < 0 && isNaN(value)) {
       setToken({ value: '', oppositeAmount: '' });
@@ -60,8 +55,8 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
       value
     );
     setToken((prev) => ({ ...prev, value: oppositeAmount }));
-    setLoading(false);
   };
+
   return (
     <div className='flex flex-col gap-4'>
       <div className='grid w-full max-w-sm items-center gap-1.5'>
@@ -84,11 +79,10 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
       </div>
       {account.status === 'connected' ? (
         <div>
-          {isRegister ? (
-            <ButtonAddLiquidity pool={pool} />
-          ) : (
+          {!isRegister && (
             <RegisterToDexButton setIsRegistered={setIsRegistered} />
           )}
+          {isRegister && <ButtonAddLiquidity pool={pool} />}
         </div>
       ) : (
         <Button disabled>Connect Wallet First</Button>

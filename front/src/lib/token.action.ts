@@ -19,6 +19,7 @@ export const getAllTokens = async () => {
 };
 
 export const getAllowance = async (
+  poolAddress: `0x${string}`,
   userAddress: `0x${string}`,
   tokenAddress1: `0x${string}`,
   tokenAddress2: `0x${string}`
@@ -27,14 +28,14 @@ export const getAllowance = async (
     address: tokenAddress1,
     abi: erc20Abi,
     functionName: 'allowance',
-    args: [userAddress, process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`],
+    args: [userAddress, poolAddress],
   })) as bigint;
 
   const allowance2 = (await readContract(config, {
     address: tokenAddress2,
     abi: erc20Abi,
     functionName: 'allowance',
-    args: [userAddress, process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`],
+    args: [userAddress, poolAddress],
   })) as bigint;
 
   return { token1: allowance1, token2: allowance2 };

@@ -296,6 +296,19 @@ export const dexAbi = [
   },
   {
     inputs: [],
+    name: 'getPoolFactory',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
     name: 'getPools',
     outputs: [
       {

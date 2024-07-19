@@ -4,6 +4,7 @@ import { readContract } from '@wagmi/core';
 
 import { dexAbi } from './abi/dex.abi';
 import { config } from './config';
+import { revalidatePath } from 'next/cache';
 
 export const isRegistered = async (userAddress: `0x${string}`) => {
   const isRegistered = (await readContract(config, {
@@ -13,4 +14,8 @@ export const isRegistered = async (userAddress: `0x${string}`) => {
     account: userAddress,
   })) as boolean;
   return isRegistered;
+};
+
+export const refetchPoolData = async (id: string) => {
+  revalidatePath(`/pool/${id}`);
 };

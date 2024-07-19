@@ -1,6 +1,5 @@
 import { AddLiquidity } from '@/components/AddLiquidity';
 import { Chart } from '@/components/Chart';
-import { isRegistered } from '@/lib/dex.action';
 import { getPoolInformation } from '@/lib/pool.action';
 
 const page = async ({ params }: { params: { id: string } }) => {

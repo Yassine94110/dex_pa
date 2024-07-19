@@ -5,6 +5,7 @@ import { dexAbi } from './abi/dex.abi';
 import { config } from './config';
 import { liquityPoolsAbi } from './abi/liquidityPools.abi';
 import { erc20Abi } from 'viem';
+import { revalidatePath } from 'next/cache';
 
 export interface Pool {
   address: `0x${string}`;
@@ -33,7 +34,6 @@ export const getAllPools = async () => {
     const poolInformation = await getPoolInformation(poolAddress);
     pools.push(poolInformation);
   }
-
   return pools;
 };
 
@@ -70,6 +70,7 @@ export const getPoolInformation = async (poolAddress: `0x${string}`) => {
     },
   };
 
+  revalidatePath(`/pool/${poolAddress}`);
   return poolInformation;
 };
 

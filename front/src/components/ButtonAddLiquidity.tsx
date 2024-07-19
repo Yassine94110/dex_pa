@@ -7,11 +7,12 @@ import { Button } from './ui/button';
 import { dexAbi } from '@/lib/abi/dex.abi';
 import { BaseError } from '@wagmi/core';
 import { Pool } from '@/lib/pool.action';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { getAllowance } from '@/lib/token.action';
 import { ButtonApproveToken } from './ButtonApproveToken';
 import { useAtom } from 'jotai';
-import { tokenAtom } from '@/lib/atom';
+import { allowanceAtom, tokenAtom } from '@/lib/atom';
+import { refetchPoolData } from '@/lib/dex.action';
 
 interface BTALProps {
   pool: Pool;
@@ -19,10 +20,7 @@ interface BTALProps {
 
 export const ButtonAddLiquidity = ({ pool }: BTALProps) => {
   const [token] = useAtom(tokenAtom);
-  const [allowanceToken, setAllowanceToken] = useState({
-    token1: BigInt(0),
-    token2: BigInt(0),
-  });
+  const [allowanceToken, setAllowanceToken] = useAtom(allowanceAtom);
 
   const account = useAccount();
 
@@ -48,6 +46,7 @@ export const ButtonAddLiquidity = ({ pool }: BTALProps) => {
   useEffect(() => {
     if (!account.address) return;
     getAllowance(
+      pool.address,
       account.address,
       pool.assetOne.address,
       pool.assetTwo.address
@@ -57,31 +56,39 @@ export const ButtonAddLiquidity = ({ pool }: BTALProps) => {
     });
   }, [token.value, account.address]);
 
+  useEffect(() => {
+    refetchPoolData(pool.address);
+  }, [isSuccess]);
+
   return (
     <div>
       {allowanceToken.token1 >= BigInt(token.value) &&
         allowanceToken.token2 >= BigInt(token.value) && (
           <Button
             onClick={() => handleAddLiquidity()}
-            disabled={isPending || isLoading}
+            disabled={isPending || isLoading || !token.value}
           >
             {isPending
               ? 'Confirming...'
               : isLoading
               ? 'Transaction pending...'
+              : !token.value
+              ? 'Set value to add first'
               : 'Add Liquidity'}
           </Button>
         )}
       {allowanceToken.token1 < BigInt(token.value) && (
         <ButtonApproveToken
-          tokenAddress={pool.assetTwo.address}
-          symbol={pool.assetTwo.symbol}
+          assetOne={pool.assetTwo}
+          assetTwo={pool.assetOne}
+          poolAddress={pool.address}
         />
       )}
       {allowanceToken.token2 < BigInt(token.oppositeAmount) && (
         <ButtonApproveToken
-          tokenAddress={pool.assetOne.address}
-          symbol={pool.assetOne.symbol}
+          assetOne={pool.assetOne}
+          assetTwo={pool.assetTwo}
+          poolAddress={pool.address}
         />
       )}
       {error && (
