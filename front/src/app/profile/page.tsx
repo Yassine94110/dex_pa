@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useAccount, useReadContract } from 'wagmi';
 import { dexAbi } from '@/lib/abi/dex.abi';
 import { getAllUsers, getUserByAddress, getAnalytics, getAnalyticsByAddress, User, Analytics, isAdmin } from '@/lib/profil.action';
+import { getTokenInfo } from '@/lib/token.action';
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -173,7 +174,7 @@ const page = () => {
                 <Label htmlFor="tokens">Tokens</Label>
                 <Input id="tokens" type="number" placeholder="Enter tokens" />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" onClick={() => console.log(getTokenInfo("0x0528E0979F18d5BA324e96191e6A661A3f3965fc"))}>
                 Add Token
               </Button>
             </form>

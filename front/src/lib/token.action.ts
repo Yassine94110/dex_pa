@@ -3,6 +3,7 @@
 import { erc20Abi } from 'viem';
 import { config } from './config';
 import { readContract } from '@wagmi/core';
+import { useReadContract } from 'wagmi';
 import { revalidatePath } from 'next/cache';
 import { Pool } from './pool.action';
 
@@ -80,3 +81,11 @@ export const hasUserEnoughtBalance = async (
   }
   return false;
 };
+
+export const getTokenInfo = async (address: `0x${string}`): Promise<any> => {
+  const result = useReadContract({
+    abi : erc20Abi,
+    address: address,
+  })
+  return result;
+}
