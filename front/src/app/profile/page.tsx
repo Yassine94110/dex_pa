@@ -1,8 +1,9 @@
 'use client';
 import ShinyButton from '@/components/ui/shiny-button';
 import Link from 'next/link';
-import { useAccount } from 'wagmi';
-import { getAllUsers, getUserByAddress, User } from '@/lib/profil.action';
+import { useAccount, useReadContract } from 'wagmi';
+import { dexAbi } from '@/lib/abi/dex.abi';
+import { getAllUsers, getUserByAddress, getAnalytics, getAnalyticsByAddress, User, Analytics } from '@/lib/profil.action';
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -15,14 +16,36 @@ import { useEffect, useState } from 'react';
 const page = () => {
   const { address, isConnected } = useAccount();
   const [User, setUser] = useState<User | null>(null);
+  const [Analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [AllUsers, setAllUsers] = useState<User[]>([]);
+  const [AllAnalytics, setAllAnalytics] = useState<Analytics | null>(null);
 
   useEffect(() => {
     if (isConnected) {
       getUserByAddress(address ?? '').then((user) => {
         setUser(user);
       });
+      getAnalyticsByAddress(address ?? '').then((analytics) => {
+        setAnalytics(analytics);
+      });
     }
   }, [isConnected]);
+
+  const isAdmin = useReadContract({
+    dexAbi,
+    address: process.env.NEXT_PUBLIC_DEX_CONTRACT as `0x${string}`,
+    functionName: 'isAdmin',
+    args: [address],
+  })
+
+  if (isAdmin) {
+    getAllUsers().then((users) => {
+      setAllUsers(users);
+    });
+    getAnalytics().then((analytics) => {
+      setAllAnalytics(analytics);
+    });
+  }
 
 
     
@@ -48,27 +71,27 @@ const page = () => {
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-muted rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold">125</p>
-              <p className="text-muted-foreground">Posts</p>
+              <p className="text-2xl font-bold">{Analytics?.swapCount}</p>
+              <p className="text-muted-foreground">Swaps</p>
             </div>
             <div className="bg-muted rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold">2.3K</p>
-              <p className="text-muted-foreground">Followers</p>
+              <p className="text-2xl font-bold">{Analytics?.totalSwapped}</p>
+              <p className="text-muted-foreground">Volume of token traded</p>
             </div>
             <div className="bg-muted rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold">512</p>
-              <p className="text-muted-foreground">Following</p>
+              <p className="text-2xl font-bold">{Analytics?.feesGenerated}</p>
+              <p className="text-muted-foreground">Fees paid (Eth)</p>
             </div>
           </div>
           <Separator className="my-6" />
           <div className="grid gap-2">
             <div>
               <p className="text-muted-foreground">Address</p>
-              <p>123 Main St, San Francisco, CA 94105</p>
+              <p>{User?.address}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Date Joined</p>
-              <p>June 1, 2023</p>
+              <p>{User?.date_inscription}</p>
             </div>
           </div>
         </div>
@@ -76,29 +99,37 @@ const page = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold">Admin Dashboard</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="bg-muted p-4 text-center">
               <CardHeader>
                 <CardTitle>Total Users</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-4xl font-bold">12,345</p>
+                <p className="text-4xl font-bold">{AllUsers.length}</p>
               </CardContent>
             </Card>
             <Card className="bg-muted p-4 text-center">
               <CardHeader>
-                <CardTitle>Active Users</CardTitle>
+                <CardTitle>Swaps</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-4xl font-bold">9,876</p>
+                <p className="text-4xl font-bold">{AllAnalytics?.swapCount}</p>
               </CardContent>
             </Card>
             <Card className="bg-muted p-4 text-center">
               <CardHeader>
-                <CardTitle>Tokens Issued</CardTitle>
+                <CardTitle>Volume of token traded</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-4xl font-bold">5,432</p>
+                <p className="text-4xl font-bold">{AllAnalytics?.totalSwapped}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-muted p-4 text-center">
+              <CardHeader>
+                <CardTitle>Total fees generated</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-4xl font-bold">{AllAnalytics?.feesGenerated}</p>
               </CardContent>
             </Card>
           </div>
@@ -108,43 +139,26 @@ const page = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Id</TableHead>
                   <TableHead>Username</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Tokens</TableHead>
+                  <TableHead>Address</TableHead>
+                  <TableHead>date_inscription</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow>
-                  <TableCell>@johndoe</TableCell>
-                  <TableCell>johndoe@example.com</TableCell>
-                  <TableCell>25</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>@janedoe</TableCell>
-                  <TableCell>janedoe@example.com</TableCell>
-                  <TableCell>15</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>@bobsmith</TableCell>
-                  <TableCell>bobsmith@example.com</TableCell>
-                  <TableCell>30</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                {AllUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>{user.id}</TableCell>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.address}</TableCell>
+                    <TableCell>{user.date_inscription}</TableCell>
+                    <TableCell>
+                      <Button className="mr-2">Ban</Button>
+                      <Button>Delete</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -165,6 +179,10 @@ const page = () => {
               </Button>
             </form>
           </div>
+          <Separator className="my-6" />
+          <Link href='/add'>
+            <ShinyButton text='+ Create Pool' />
+          </Link>
         </div>
       </div>
     </div>
