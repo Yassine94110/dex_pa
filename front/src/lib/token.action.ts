@@ -3,10 +3,11 @@
 import { erc20Abi } from 'viem';
 import { config } from './config';
 import { readContract } from '@wagmi/core';
+import { revalidatePath } from 'next/cache';
 
 export interface Token {
   id: number;
-  address: string;
+  address: `0x${string}`;
   name: string;
   ticker: string;
   supply: number;
@@ -15,6 +16,8 @@ export interface Token {
 
 export const getAllTokens = async () => {
   const tokens = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/token`);
+  revalidatePath('/token');
+  revalidatePath('/swap');
   return tokens.json();
 };
 
@@ -45,12 +48,14 @@ export const getBalanceOf = async (
   address: `0x${string}`,
   userAddress: `0x${string}`
 ) => {
-  const balance = (await readContract(config, {
+  const balance = await readContract(config, {
     address,
     abi: erc20Abi,
     functionName: 'balanceOf',
     args: [userAddress],
-  })) as bigint;
+  });
 
-  return balance;
+  if (typeof balance === 'bigint') {
+    return balance;
+  } else return null;
 };

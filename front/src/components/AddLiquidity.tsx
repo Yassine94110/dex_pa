@@ -12,7 +12,6 @@ import { tokenAtom } from '@/lib/atom';
 import { RegisterToDexButton } from './RegisterToDexButton';
 import { isRegistered } from '@/lib/dex.action';
 import { ButtonAddLiquidity } from './ButtonAddLiquidity';
-import { useDebouncedCallback } from 'use-debounce';
 
 export const AddLiquidity = ({ pool }: { pool: Pool }) => {
   const { assetOne, assetTwo } = pool;

@@ -1,18 +1,21 @@
 import { Send } from '@/components/Send';
 import { Swap } from '@/components/Swap';
 import { Tabs } from '@/components/ui/tabs';
+import { getAllTokens } from '@/lib/token.action';
 
-export default function Home() {
+export default async function Home() {
+  const tokens = await getAllTokens();
+
   const tabs = [
-    {
-      title: 'Swap',
-      value: 'swap',
-      content: <Swap />,
-    },
+    // {
+    //   title: 'Swap',
+    //   value: 'swap',
+    //   content: <Swap />,
+    // },
     {
       title: 'Send',
       value: 'send',
-      content: <Send />,
+      content: <Send tokens={tokens} />,
     },
   ];
 

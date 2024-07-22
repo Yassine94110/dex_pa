@@ -9,6 +9,7 @@ import { Navbar } from '@/components/Navbar';
 import RadialGradient from '@/components/ui/radial-gradient';
 import { Vortex } from '@/components/ui/vortex';
 import { Provider } from 'jotai';
+import { Toaster } from "@/components/ui/sonner"
 
 export const metadata: Metadata = {
   title: 'Galaxy Swap',
@@ -46,6 +47,7 @@ export default function RootLayout({
                   {children}
                 </Vortex>
               </main>
+              <Toaster />
               <RadialGradient />
             </Web3ModalProvider>
           </Provider>

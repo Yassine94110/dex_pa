@@ -47,12 +47,14 @@ export const ButtonAddLiquidity = ({ pool }: BTALProps) => {
     if (!account.address) return;
 
     getBalanceOf(pool.assetOne.address, account.address).then((balance) => {
+      if (!balance) return;
       console.log('balance token1', balance / BigInt(10 ** 18));
       const tokenValue = BigInt(token.value) * BigInt(10 ** 18);
       console.log('token1 value setted', token.value);
       if (tokenValue < balance) {
         getBalanceOf(pool.assetTwo.address, account.address!).then(
           (balance) => {
+            if (!balance) return;
             console.log('balance token2', balance / BigInt(10 ** 18));
             console.log('token2 value setted', token.oppositeAmount);
             const tokenValue = BigInt(token.oppositeAmount) * BigInt(10 ** 18);
