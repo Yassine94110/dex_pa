@@ -83,9 +83,37 @@ export const hasUserEnoughtBalance = async (
 };
 
 export const getTokenInfo = async (address: `0x${string}`): Promise<any> => {
-  const result = useReadContract({
-    abi : erc20Abi,
+  const { data: tokenName } = useReadContract({
     address: address,
-  })
-  return result;
+    abi: erc20Abi,
+    functionName: 'name',
+  });
+
+  const { data: tokenSymbol } = useReadContract({
+    address: address,
+    abi: erc20Abi,
+    functionName: 'symbol',
+  });
+
+  const { data: tokenSupply } = useReadContract({
+    address: address,
+    abi: erc20Abi,
+    functionName: 'totalSupply',
+  });
+
+  return { address: address, name: tokenName, symbol: tokenSymbol, supply: tokenSupply };
+}
+
+//methode post
+export const createToken = async (address: `0x${string}`): Promise<Token> => {
+  const token = await getTokenInfo(address);
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ address, name: token.name, ticker: token.symbol, supply: token.supply }),
+  });
+  
+  return response.json();
 }
