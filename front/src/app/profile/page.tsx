@@ -3,7 +3,7 @@ import ShinyButton from '@/components/ui/shiny-button';
 import Link from 'next/link';
 import { useAccount, useReadContract } from 'wagmi';
 import { dexAbi } from '@/lib/abi/dex.abi';
-import { getAllUsers, getUserByAddress, getAnalytics, getAnalyticsByAddress, User, Analytics } from '@/lib/profil.action';
+import { getAllUsers, getUserByAddress, getAnalytics, getAnalyticsByAddress, User, Analytics, isAdmin } from '@/lib/profil.action';
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -19,6 +19,7 @@ const page = () => {
   const [Analytics, setAnalytics] = useState<Analytics | null>(null);
   const [AllUsers, setAllUsers] = useState<User[]>([]);
   const [AllAnalytics, setAllAnalytics] = useState<Analytics | null>(null);
+  const [UserIsAdmin, setUserIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
     if (isConnected) {
@@ -28,17 +29,15 @@ const page = () => {
       getAnalyticsByAddress(address ?? '').then((analytics) => {
         setAnalytics(analytics);
       });
+      isAdmin(address ?? '').then((admin) => {
+        setUserIsAdmin(admin);
+      });
     }
   }, [isConnected]);
 
-  const isAdmin = useReadContract({
-    abi: dexAbi,
-    address: process.env.NEXT_PUBLIC_DEX_CONTRACT as `0x${string}`,
-    functionName: 'isAdmin',
-    args: [address],
-  })
+  
 
-  if (isAdmin) {
+  if (UserIsAdmin) {
     getAllUsers().then((users) => {
       setAllUsers(users);
     });

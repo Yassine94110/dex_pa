@@ -3,6 +3,7 @@
 import { get } from 'http';
 import { config } from './config';
 import { readContract } from '@wagmi/core';
+import { dexAbi } from './abi/dex.abi';
 
 export interface User {
     id: number;
@@ -39,5 +40,15 @@ export const getAnalytics = async (): Promise<Analytics> => {
 export const getAnalyticsByAddress = async (address: string): Promise<Analytics> => {
     const analytics = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analytics/${address}`);
     return analytics.json();
+}
+
+export const isAdmin = async (address: string): Promise<boolean> => {
+    const admin = await readContract(config, {
+        address: process.env.NEXT_PUBLIC_DEX_CONTRACT as `0x${string}`,
+        abi: dexAbi,
+        functionName: 'isAdmin',
+        args: [address as `0x${string}`],
+    });
+    return admin as boolean;
 }
     
