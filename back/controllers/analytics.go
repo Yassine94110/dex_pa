@@ -7,14 +7,13 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"os"
 
 	"dex_pa/prisma/db"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-const infuraURL = "https://sepolia.infura.io/v3/10641427c6714f2784e2467206e5fadb"
-const contractAddress = "0x721A81953e15fe80B00488d048F6Cc7177280097"
 const swapExecutedTopic = "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
 
 type JSONRPCRequest struct {
@@ -49,6 +48,8 @@ type Log struct {
 }
 
 func getLogs(fromBlock, toBlock, address string, topics []string) ([]Log, error) {
+	infuraURL := os.Getenv("INFURA_URL")
+
 	params := map[string]interface{}{
 		"fromBlock": fromBlock,
 		"toBlock":   toBlock,
@@ -110,7 +111,7 @@ func GetAnalytics(client *db.PrismaClient) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		fromBlock := "0x5fb619" // Bloc 6282585 en hexadécimal
 		toBlock := "latest"     // Jusqu'au bloc le plus récent
-		address := contractAddress
+		address := os.Getenv("CONTRACT_ADDRESS")
 		topics := []string{swapExecutedTopic} // Topic de l'event SwapExecuted
 
 		logs, err := getLogs(fromBlock, toBlock, address, topics)
@@ -150,7 +151,7 @@ func GetAnalyticsByAddress(client *db.PrismaClient) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		fromBlock := "0x5fb619" // Bloc 6282585 en hexadécimal
 		toBlock := "latest"     // Jusqu'au bloc le plus récent
-		address := contractAddress
+		address := os.Getenv("CONTRACT_ADDRESS")
 		userAddress := c.Params("address")
 
 		logs, err := getLogs(fromBlock, toBlock, address, []string{swapExecutedTopic, userAddress})

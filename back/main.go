@@ -7,11 +7,18 @@ import (
 	"dex_pa/prisma/db"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Charger les variables d'environnement
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
 	client := db.NewClient()
-	err := client.Prisma.Connect()
+	err = client.Prisma.Connect()
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
