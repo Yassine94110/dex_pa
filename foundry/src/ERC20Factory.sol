@@ -14,14 +14,25 @@ contract ERC20Factory {
 
     TokenInfo[] private tokens;
 
-    event TokenCreated(address indexed tokenAddress, string name, string symbol, uint256 initialSupply, address owner);
+    event TokenCreated(
+        address indexed tokenAddress,
+        string name,
+        string symbol,
+        uint256 initialSupply,
+        address owner
+    );
 
     function createToken(
         string memory name,
         string memory symbol,
         uint256 initialSupply
     ) public returns (address) {
-        ERC20Token token = new ERC20Token(name, symbol, initialSupply, msg.sender);
+        ERC20Token token = new ERC20Token(
+            name,
+            symbol,
+            initialSupply,
+            msg.sender
+        );
         TokenInfo memory newToken = TokenInfo({
             tokenAddress: address(token),
             name: name,
@@ -30,7 +41,13 @@ contract ERC20Factory {
             owner: msg.sender
         });
         tokens.push(newToken);
-        emit TokenCreated(address(token), name, symbol, initialSupply, msg.sender);
+        emit TokenCreated(
+            address(token),
+            name,
+            symbol,
+            initialSupply,
+            msg.sender
+        );
         return address(token);
     }
 
