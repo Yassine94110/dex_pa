@@ -16,12 +16,14 @@ interface BATProps {
   assetOne: Asset;
   assetTwo: Asset;
   poolAddress: `0x${string}`;
+  tokenId: 1 | 2;
 }
 
 export const ButtonApproveToken = ({
   assetOne,
   assetTwo,
   poolAddress,
+  tokenId,
 }: BATProps) => {
   const [token] = useAtom(tokenAtom);
   const [allowanceToken, setAllowanceToken] = useAtom(allowanceAtom);
@@ -29,11 +31,12 @@ export const ButtonApproveToken = ({
 
   const { data: hash, isPending, writeContract, error } = useWriteContract();
   const handleApproveToken = async () => {
+    const tokenValue = tokenId === 1 ? token.value1 : token.value2;
     writeContract({
       address: assetOne.address as `0x${string}`,
       abi: erc20Abi,
       functionName: 'approve',
-      args: [poolAddress, BigInt(token.value) * BigInt(10 ** 18)],
+      args: [poolAddress, BigInt(tokenValue) * BigInt(10 ** 18)],
     });
   };
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({
@@ -41,7 +44,7 @@ export const ButtonApproveToken = ({
   });
 
   useEffect(() => {
-    if (!token.value) return;
+    if (!token.value1) return;
     if (!account.address) return;
     getAllowance(
       poolAddress,

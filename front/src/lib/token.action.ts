@@ -4,6 +4,7 @@ import { erc20Abi } from 'viem';
 import { config } from './config';
 import { readContract } from '@wagmi/core';
 import { revalidatePath } from 'next/cache';
+import { Pool } from './pool.action';
 
 export interface Token {
   id: number;
@@ -47,7 +48,7 @@ export const getAllowance = async (
 export const getBalanceOf = async (
   address: `0x${string}`,
   userAddress: `0x${string}`
-) => {
+): Promise<bigint | null> => {
   const balance = await readContract(config, {
     address,
     abi: erc20Abi,
@@ -58,4 +59,24 @@ export const getBalanceOf = async (
   if (typeof balance === 'bigint') {
     return balance;
   } else return null;
+};
+
+export const hasUserEnoughtBalance = async (
+  userAddress: `0x${string}`,
+  value1: bigint,
+  value2: bigint,
+  pool: Pool
+): Promise<boolean> => {
+  const balance = await getBalanceOf(pool.assetOne.address, userAddress);
+  if (!balance) return false;
+  if (value1 * BigInt(10 ** 18) < balance) {
+    const balance2 = await getBalanceOf(pool.assetTwo.address, userAddress);
+    if (!balance2) return false;
+    if (BigInt(value2) * BigInt(10 ** 18) < balance2) {
+      return true;
+    }
+  } else {
+    return false;
+  }
+  return false;
 };

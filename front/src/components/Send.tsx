@@ -112,12 +112,12 @@ export const Send = ({ tokens }: SendProps) => {
               ? 'Connect Your Wallet First'
               : BigInt(send.amount) * BigInt(10 ** 18) > balance.balance1!
               ? 'Not enought balance'
+              : BigInt(send.amount) <= 0
+              ? 'Set An Amount'
               : !isAddress(send.to)
-              ? 'Invalid Receiver Address'
+              ? 'Set A Valid Address'
               : isLoading || isPending
               ? 'Pending...'
-              : BigInt(send.amount) < 0
-              ? 'Set An Amount'
               : 'Send'
           }
         />

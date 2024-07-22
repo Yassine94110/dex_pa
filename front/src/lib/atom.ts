@@ -2,8 +2,8 @@ import { atom } from 'jotai';
 import { Token } from './token.action';
 
 export const tokenAtom = atom({
-  value: '',
-  oppositeAmount: '',
+  value1: '',
+  value2: '',
 });
 
 export const allowanceAtom = atom({
@@ -41,4 +41,12 @@ export const sendAtom = atom<{
 }>({
   amount: 0,
   to: '',
+});
+
+export const swapAtom = atom<{
+  amount1: number;
+  amount2: number;
+}>({
+  amount1: 0,
+  amount2: 0,
 });

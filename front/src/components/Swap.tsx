@@ -11,7 +11,7 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from 'wagmi';
-import { balanceAtom } from '@/lib/atom';
+import { activeTokenAtom, balanceAtom } from '@/lib/atom';
 import { useAtom } from 'jotai';
 
 interface SwapProps {
@@ -19,7 +19,8 @@ interface SwapProps {
 }
 
 export const Swap = ({ tokens }: SwapProps) => {
-  const [balance] = useAtom(balanceAtom);
+  const [balance, setBalance] = useAtom(balanceAtom);
+  const [activeToken, setActiveToken] = useAtom(activeTokenAtom);
   const account = useAccount();
 
   const { data: hash, isPending, writeContract, error } = useWriteContract();
@@ -36,14 +37,27 @@ export const Swap = ({ tokens }: SwapProps) => {
     hash,
   });
 
+  const handleChange = () => {
+    setActiveToken({
+      token1: activeToken.token2,
+      token2: activeToken.token1,
+    });
+    setBalance({
+      balance1: balance.balance2,
+      balance2: balance.balance1,
+    });
+  };
+
   return (
     <div className='relative flex flex-col gap-4'>
       <div
         className='absolute flex items-center justify-center h-10 w-10 z-50 -right-14 top-[33%] 
       border border-accent dark:bg-[#38313d] rounded-xl shadow-lg cursor-pointer'
+        onClick={() => handleChange()}
       >
         <ArrowDownUp />
       </div>
+
       <div className='relative space-y-2 overflow-hidden px-3 border border-accent dark:bg-[#38313d] rounded-xl shadow-lg'>
         <BorderBeam size={160} duration={12} delay={9} borderWidth={2.5} />
         <div className='relative flex flex-col gap-2 py-3'>

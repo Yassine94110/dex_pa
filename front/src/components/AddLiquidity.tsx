@@ -29,31 +29,31 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
   }, [account.address, account]);
 
   const handleChangeToken1 = async (e: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (value < 0 && isNaN(value)) {
-      setToken({ value: '', oppositeAmount: '' });
+    const value1 = Number(e.target.value);
+    if (value1 < 0 && isNaN(value1)) {
+      setToken({ value1: '', value2: '' });
       return;
     }
-    const oppositeAmount = await getOppositeAmount(
+    const value2 = await getOppositeAmount(
       pool.address,
       pool.assetOne.address,
-      value
+      value1
     );
-    setToken({ value: String(value), oppositeAmount });
+    setToken({ value1: String(value1), value2: String(value2) });
   };
 
   const handleChangeToken2 = async (e: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (value < 0 && isNaN(value)) {
-      setToken({ value: '', oppositeAmount: '' });
+    const value2 = Number(e.target.value);
+    if (value2 < 0 && isNaN(value2)) {
+      setToken({ value1: '', value2: '' });
       return;
     }
-    const oppositeAmount = await getOppositeAmount(
+    const value1 = await getOppositeAmount(
       pool.address,
       pool.assetTwo.address,
-      value
+      value2
     );
-    setToken({ value: oppositeAmount, oppositeAmount: String(value) });
+    setToken({ value1: String(value1), value2: String(value2) });
   };
 
   return (
@@ -64,7 +64,7 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
           type='string'
           placeholder='0.00'
           onChange={(e) => handleChangeToken1(e)}
-          value={token.value}
+          value={token.value1}
         />
       </div>
       <div className='grid w-full max-w-sm items-center gap-1.5'>
@@ -73,7 +73,7 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
           type='string'
           placeholder='0.00'
           onChange={(e) => handleChangeToken2(e)}
-          value={token.oppositeAmount}
+          value={token.value2}
         />
       </div>
       {account.status === 'connected' ? (

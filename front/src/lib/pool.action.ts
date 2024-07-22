@@ -119,5 +119,5 @@ export const getOppositeAmount = async (
     functionName: 'amountOfOppositeTokenNeeded',
     args: [tokenAddress, BigInt(amount)],
   })) as bigint;
-  return String(oppositeAmount);
+  return oppositeAmount;
 };
