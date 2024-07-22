@@ -15,7 +15,3 @@ export const isRegistered = async (userAddress: `0x${string}`) => {
   })) as boolean;
   return isRegistered;
 };
-
-export const refetchPoolData = async (id: string) => {
-  revalidatePath(`/pool/${id}`);
-};

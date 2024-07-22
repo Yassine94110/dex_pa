@@ -40,3 +40,17 @@ export const getAllowance = async (
 
   return { token1: allowance1, token2: allowance2 };
 };
+
+export const getBalanceOf = async (
+  address: `0x${string}`,
+  userAddress: `0x${string}`
+) => {
+  const balance = (await readContract(config, {
+    address,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [userAddress],
+  })) as bigint;
+
+  return balance;
+};

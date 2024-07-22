@@ -12,6 +12,7 @@ import { tokenAtom } from '@/lib/atom';
 import { RegisterToDexButton } from './RegisterToDexButton';
 import { isRegistered } from '@/lib/dex.action';
 import { ButtonAddLiquidity } from './ButtonAddLiquidity';
+import { useDebouncedCallback } from 'use-debounce';
 
 export const AddLiquidity = ({ pool }: { pool: Pool }) => {
   const { assetOne, assetTwo } = pool;
@@ -34,27 +35,26 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
       setToken({ value: '', oppositeAmount: '' });
       return;
     }
-    setToken((prev) => ({ ...prev, value: String(value) }));
     const oppositeAmount = await getOppositeAmount(
       pool.address,
       pool.assetOne.address,
       value
     );
-    setToken((prev) => ({ ...prev, oppositeAmount }));
+    setToken({ value: String(value), oppositeAmount });
   };
+
   const handleChangeToken2 = async (e: ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     if (value < 0 && isNaN(value)) {
       setToken({ value: '', oppositeAmount: '' });
       return;
     }
-    setToken((prev) => ({ ...prev, oppositeAmount: value.toString() }));
     const oppositeAmount = await getOppositeAmount(
       pool.address,
       pool.assetTwo.address,
       value
     );
-    setToken((prev) => ({ ...prev, value: oppositeAmount }));
+    setToken({ value: oppositeAmount, oppositeAmount: String(value) });
   };
 
   return (

@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache';
 
 export interface Pool {
   address: `0x${string}`;
-  tvl: number;
+  tvl: bigint;
   assetOneLock: bigint;
   assetTwoLock: bigint;
   assetOne: Asset;
@@ -34,6 +34,8 @@ export const getAllPools = async () => {
     const poolInformation = await getPoolInformation(poolAddress);
     pools.push(poolInformation);
   }
+
+  revalidatePath('/pool');
   return pools;
 };
 
@@ -55,7 +57,9 @@ export const getPoolInformation = async (poolAddress: `0x${string}`) => {
 
   const poolInformation: Pool = {
     address: poolAddress,
-    tvl: 0,
+    tvl:
+      (await getAssetLock(assetOneAddress, poolAddress)) +
+      (await getAssetLock(assetTwoAddress, poolAddress)),
     assetOneLock: await getAssetLock(assetOneAddress, poolAddress),
     assetTwoLock: await getAssetLock(assetTwoAddress, poolAddress),
     assetOne: {
