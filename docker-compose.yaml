@@ -30,5 +30,15 @@ services:
       DATABASE_URL: postgresql://postgres:password@db:5432/database
     command: /bin/sh -c "go run github.com/steebchen/prisma-client-go db push && /app"
 
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    env_file: ./front/.env.local
+
 volumes:
   db-data:
