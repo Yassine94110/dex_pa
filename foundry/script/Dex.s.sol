@@ -5,11 +5,14 @@ import {Script, console} from "forge-std/Script.sol";
 import {DEX} from "../src/DEX.sol";
 import {GSToken} from "../src/GSToken.sol";
 import {JapanToken} from "../src/JapanToken.sol";
+import {ERC20Factory} from "../src/ERC20Factory.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 contract DexScript is Script {
     DEX public dex;
     GSToken public gsToken;
     JapanToken public japanToken;
+    ERC20Factory public erc20Factory;
 
     address account1 = 0xA21039F3c7ba23C1fC14BBD59481e0E7f085C68d; // Hamza admin
     // address account2 = 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2; // Hamza user
@@ -79,6 +82,39 @@ contract DexScript is Script {
             dex.grantAdmin(account1);
             dex.grantAdmin(account3);
             console.log("Accesses granted successfully.");
+
+            // create factory
+            console.log("Deploying ERC20Factory contract...");
+            erc20Factory = new ERC20Factory();
+            console.log("ERC20Factory contract deployed at:", address(erc20Factory));
+            // create 10 token 
+            console.log("Creating 10 tokens...");
+            for (uint256 i = 0; i < 10; i++) {
+                erc20Factory.createToken(string.concat("Token", string(abi.encodePacked(i))), string.concat("T" , string(abi.encodePacked(i))), 100000 * 1 ether);
+            }
+            console.log("10 tokens created successfully.");
+            // create 5 liquidity pool
+            console.log("Creating 4 liquidity pools...");
+            for (uint256 i = 0; i < 5; i++) {
+                address token1 = erc20Factory.getToken(i).tokenAddress;
+                address token2 = erc20Factory.getToken(i + 5).tokenAddress;
+                dex.createLiquidityPool(token1, token2);
+            }
+            console.log("4 liquidity pools created successfully.");
+            // add initial liquidity
+            console.log("Adding initial liquidity to the pools...");
+            for (uint256 i = 0; i < 5; i++) {
+                address token1 = erc20Factory.getToken(i).tokenAddress;
+                address token2 = erc20Factory.getToken(i + 5).tokenAddress;
+                address pool = dex.getPool(token1, token2);
+                // approve tokens
+                IERC20(token1).approve(pool, 10000 * 1 ether);
+                IERC20(token2).approve(pool, 10000 * 1 ether);
+                dex.addInitialLiquidity(pool, 10000 * 1 ether, 10000 * 1 ether);
+            }
+
+
+
 
             vm.stopBroadcast();
         }
