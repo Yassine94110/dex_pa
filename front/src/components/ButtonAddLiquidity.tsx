@@ -8,11 +8,7 @@ import { dexAbi } from '@/lib/abi/dex.abi';
 import { BaseError } from '@wagmi/core';
 import { getPoolInformation, Pool } from '@/lib/pool.action';
 import { useEffect, useState } from 'react';
-import {
-  getAllowance,
-  getBalanceOf,
-  hasUserEnoughtBalance,
-} from '@/lib/token.action';
+import { getAllowance, hasUserEnoughtBalance } from '@/lib/token.action';
 import { ButtonApproveToken } from './ButtonApproveToken';
 import { useAtom } from 'jotai';
 import { allowanceAtom, tokenAtom } from '@/lib/atom';
@@ -34,11 +30,7 @@ export const ButtonAddLiquidity = ({ pool }: BTALProps) => {
       address: process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`,
       abi: dexAbi,
       functionName: 'addLiquidity',
-      args: [
-        pool.assetOne.address,
-        pool.assetTwo.address,
-        BigInt(token.value1) * BigInt(10 ** 18),
-      ],
+      args: [pool.assetOne.address, pool.assetTwo.address, token.value1],
     });
   };
 
@@ -51,8 +43,8 @@ export const ButtonAddLiquidity = ({ pool }: BTALProps) => {
 
     hasUserEnoughtBalance(
       account.address,
-      BigInt(token.value1),
-      BigInt(token.value2),
+      token.value1,
+      token.value2,
       pool
     ).then((enought) => setEnoughtBalance(enought));
 
@@ -62,20 +54,9 @@ export const ButtonAddLiquidity = ({ pool }: BTALProps) => {
       pool.assetOne.address,
       pool.assetTwo.address
     ).then((allowance) => {
-      console.log('allowance', allowance);
-      console.log('token1', token.value1);
-      console.log('token2', token.value2);
-      console.log(
-        'test should be false',
-        allowanceToken.token2 < BigInt(token.value2) * BigInt(10 ** 18)
-      );
-      console.log(
-        'test should be false',
-        allowanceToken.token1 < BigInt(token.value2) * BigInt(10 ** 18)
-      );
       setAllowanceToken(allowance);
     });
-  }, [token.value1, account.address]);
+  }, [token, account.address]);
 
   useEffect(() => {
     if (!isSuccess) return;
@@ -88,8 +69,8 @@ export const ButtonAddLiquidity = ({ pool }: BTALProps) => {
   return (
     <div>
       {enoughtBalance &&
-        allowanceToken.token1 >= BigInt(token.value1) * BigInt(10 ** 18) &&
-        allowanceToken.token2 >= BigInt(token.value2) * BigInt(10 ** 18) && (
+        allowanceToken.token1 >= token.value1 &&
+        allowanceToken.token2 >= token.value2 && (
           <Button
             onClick={() => handleAddLiquidity()}
             disabled={isPending || isLoading || !token.value1}
@@ -104,24 +85,22 @@ export const ButtonAddLiquidity = ({ pool }: BTALProps) => {
           </Button>
         )}
       <div className='flex gap-4'>
-        {enoughtBalance &&
-          allowanceToken.token1 < BigInt(token.value1) * BigInt(10 ** 18) && (
-            <ButtonApproveToken
-              assetOne={pool.assetTwo}
-              assetTwo={pool.assetOne}
-              poolAddress={pool.address}
-              tokenId={2}
-            />
-          )}
-        {enoughtBalance &&
-          allowanceToken.token2 < BigInt(token.value2) * BigInt(10 ** 18) && (
-            <ButtonApproveToken
-              assetOne={pool.assetOne}
-              assetTwo={pool.assetTwo}
-              poolAddress={pool.address}
-              tokenId={1}
-            />
-          )}
+        {enoughtBalance && allowanceToken.token1 < token.value1 && (
+          <ButtonApproveToken
+            assetOne={pool.assetOne}
+            assetTwo={pool.assetTwo}
+            poolAddress={pool.address}
+            tokenId={1}
+          />
+        )}
+        {enoughtBalance && allowanceToken.token2 < token.value2 && (
+          <ButtonApproveToken
+            assetOne={pool.assetOne}
+            assetTwo={pool.assetTwo}
+            poolAddress={pool.address}
+            tokenId={2}
+          />
+        )}
         {!enoughtBalance && !token.value1 && (
           <Button disabled>Set Value To Add First</Button>
         )}

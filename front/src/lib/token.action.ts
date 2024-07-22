@@ -70,10 +70,10 @@ export const hasUserEnoughtBalance = async (
 ): Promise<boolean> => {
   const balance = await getBalanceOf(pool.assetOne.address, userAddress);
   if (!balance) return false;
-  if (value1 * BigInt(10 ** 18) < balance) {
+  if (value1 < balance) {
     const balance2 = await getBalanceOf(pool.assetTwo.address, userAddress);
     if (!balance2) return false;
-    if (BigInt(value2) * BigInt(10 ** 18) < balance2) {
+    if (value2 < balance2) {
       return true;
     }
   } else {

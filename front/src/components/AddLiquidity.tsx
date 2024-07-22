@@ -29,9 +29,9 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
   }, [account.address, account]);
 
   const handleChangeToken1 = async (e: ChangeEvent<HTMLInputElement>) => {
-    const value1 = Number(e.target.value);
-    if (value1 < 0 && isNaN(value1)) {
-      setToken({ value1: '', value2: '' });
+    const value1 = BigInt(e.target.value) * BigInt(10 ** 18);
+    if (value1 < 0) {
+      setToken({ value1: BigInt(0), value2: BigInt(0) });
       return;
     }
     const value2 = await getOppositeAmount(
@@ -39,13 +39,13 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
       pool.assetOne.address,
       value1
     );
-    setToken({ value1: String(value1), value2: String(value2) });
+    setToken({ value1, value2 });
   };
 
   const handleChangeToken2 = async (e: ChangeEvent<HTMLInputElement>) => {
-    const value2 = Number(e.target.value);
-    if (value2 < 0 && isNaN(value2)) {
-      setToken({ value1: '', value2: '' });
+    const value2 = BigInt(e.target.value) * BigInt(10 ** 18);
+    if (value2 < 0) {
+      setToken({ value1: BigInt(0), value2: BigInt(0) });
       return;
     }
     const value1 = await getOppositeAmount(
@@ -53,7 +53,7 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
       pool.assetTwo.address,
       value2
     );
-    setToken({ value1: String(value1), value2: String(value2) });
+    setToken({ value1, value2 });
   };
 
   return (
@@ -64,7 +64,7 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
           type='string'
           placeholder='0.00'
           onChange={(e) => handleChangeToken1(e)}
-          value={token.value1}
+          value={String(token.value1 / BigInt(10 ** 18))}
         />
       </div>
       <div className='grid w-full max-w-sm items-center gap-1.5'>
@@ -73,7 +73,7 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
           type='string'
           placeholder='0.00'
           onChange={(e) => handleChangeToken2(e)}
-          value={token.value2}
+          value={String(token.value2 / BigInt(10 ** 18))}
         />
       </div>
       {account.status === 'connected' ? (

@@ -33,10 +33,10 @@ export const ButtonApproveToken = ({
   const handleApproveToken = async () => {
     const tokenValue = tokenId === 1 ? token.value1 : token.value2;
     writeContract({
-      address: assetOne.address as `0x${string}`,
+      address: tokenId === 1 ? assetOne.address : assetTwo.address,
       abi: erc20Abi,
       functionName: 'approve',
-      args: [poolAddress, BigInt(tokenValue) * BigInt(10 ** 18)],
+      args: [poolAddress, tokenValue],
     });
   };
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({
@@ -67,7 +67,9 @@ export const ButtonApproveToken = ({
           ? 'Confirming...'
           : isLoading
           ? 'Transaction pending...'
-          : `Approve ${assetOne.symbol} token`}
+          : `Approve ${
+              tokenId === 1 ? assetOne.symbol : assetTwo.symbol
+            } token`}
       </Button>
       {error && (
         <div className='text-xs italic text-red-900 mt-4'>

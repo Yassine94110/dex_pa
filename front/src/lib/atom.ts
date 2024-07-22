@@ -1,9 +1,12 @@
 import { atom } from 'jotai';
 import { Token } from './token.action';
 
-export const tokenAtom = atom({
-  value1: '',
-  value2: '',
+export const tokenAtom = atom<{
+  value1: bigint;
+  value2: bigint;
+}>({
+  value1: BigInt(0),
+  value2: BigInt(0),
 });
 
 export const allowanceAtom = atom({

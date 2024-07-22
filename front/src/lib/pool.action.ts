@@ -111,13 +111,13 @@ export const getAssetInformation = async (assetAddress: `0x${string}`) => {
 export const getOppositeAmount = async (
   poolAddress: `0x${string}`,
   tokenAddress: `0x${string}`,
-  amount: number
+  amount: bigint
 ) => {
   const oppositeAmount = (await readContract(config, {
     address: poolAddress,
     abi: liquityPoolsAbi,
     functionName: 'amountOfOppositeTokenNeeded',
-    args: [tokenAddress, BigInt(amount)],
+    args: [tokenAddress, amount],
   })) as bigint;
   return oppositeAmount;
 };
