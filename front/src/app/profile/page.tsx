@@ -32,7 +32,7 @@ const page = () => {
   }, [isConnected]);
 
   const isAdmin = useReadContract({
-    dexAbi,
+    abi: dexAbi,
     address: process.env.NEXT_PUBLIC_DEX_CONTRACT as `0x${string}`,
     functionName: 'isAdmin',
     args: [address],
