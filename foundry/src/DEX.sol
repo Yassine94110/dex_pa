@@ -5,7 +5,9 @@ import "./PoolFactory.sol";
 import "./ILiquidityPool.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IAccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/IAccessControlEnumerable.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
 
 contract DEX is AccessControl {
     event SwapExecuted(
@@ -129,10 +131,21 @@ contract DEX is AccessControl {
 
     function grantAdmin(address _address) external onlyRole(ROLE_ADMIN) {
         _grantRole(ROLE_ADMIN, _address);
+        _grantRole(ROLE_USER, _address);
+
     }
 
+    function isUser(address _address) public view returns (bool) {
+        return hasRole(ROLE_USER, _address);
+    }
+    function isAdmin(address _address) public view returns (bool) {
+        return hasRole(ROLE_ADMIN, _address);
+    }
     function isUser() public view returns (bool) {
         return hasRole(ROLE_USER, msg.sender);
+    }
+    function isAdmin() public view returns (bool) {
+        return hasRole(ROLE_ADMIN, msg.sender);
     }
     // get poolFactory address
     function getPoolFactory() public view returns (address) {
