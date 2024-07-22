@@ -7,11 +7,11 @@ export default async function Home() {
   const tokens = await getAllTokens();
 
   const tabs = [
-    // {
-    //   title: 'Swap',
-    //   value: 'swap',
-    //   content: <Swap />,
-    // },
+    {
+      title: 'Swap',
+      value: 'swap',
+      content: <Swap tokens={tokens} />,
+    },
     {
       title: 'Send',
       value: 'send',

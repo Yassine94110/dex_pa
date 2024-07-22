@@ -31,7 +31,7 @@ export const Send = ({ tokens }: SendProps) => {
   const handleSend = async () => {
     console.log('send', send);
     writeContract({
-      address: activeToken?.address as `0x${string}`,
+      address: activeToken?.token1?.address as `0x${string}`,
       abi: erc20Abi,
       functionName: 'transfer',
       args: [send.to as `0x${string}`, BigInt(send.amount) * BigInt(10 ** 18)],
@@ -46,12 +46,14 @@ export const Send = ({ tokens }: SendProps) => {
     if (isSuccess) {
       toast.success('Transaction success');
       if (!account.address) return;
-      if (!activeToken?.address) return;
-      getBalanceOf(activeToken?.address, account.address).then((balance) => {
-        if (!balance) return;
-        console.log('balance', balance);
-        setBalance(balance);
-      });
+      if (!activeToken.token1?.address) return;
+      getBalanceOf(activeToken?.token1.address, account.address).then(
+        (balance) => {
+          if (!balance) return;
+          console.log('balance', balance);
+          setBalance((prev) => ({ ...prev, balance1: balance }));
+        }
+      );
     }
   }, [isSuccess]);
 
@@ -69,12 +71,14 @@ export const Send = ({ tokens }: SendProps) => {
                 setSend({ ...send, amount: Number(e.target.value) })
               }
             />
-            <DialogToken tokens={tokens} />
+            <DialogToken tokens={tokens} id={1} />
           </div>
-
           <div>
             <span className='text-xs text-slate-400'>
-              Balance: {balance ? Number(balance / BigInt(10 ** 18)) : 0}
+              Balance:{' '}
+              {balance.balance1
+                ? Number(balance.balance1 / BigInt(10 ** 18))
+                : 0}
             </span>
           </div>
         </div>
@@ -95,7 +99,7 @@ export const Send = ({ tokens }: SendProps) => {
         onClick={() => handleSend()}
         disabled={
           account.status !== 'connected' ||
-          BigInt(send.amount) * BigInt(10 ** 18) > balance! ||
+          BigInt(send.amount) * BigInt(10 ** 18) > balance.balance1! ||
           BigInt(send.amount) < 0 ||
           !isAddress(send.to) ||
           isPending ||
@@ -106,10 +110,10 @@ export const Send = ({ tokens }: SendProps) => {
           text={
             account.status !== 'connected'
               ? 'Connect Your Wallet First'
-              : BigInt(send.amount) * BigInt(10 ** 18) > balance!
+              : BigInt(send.amount) * BigInt(10 ** 18) > balance.balance1!
               ? 'Not enought balance'
               : !isAddress(send.to)
-              ? 'Invalid receiver address'
+              ? 'Invalid Receiver Address'
               : isLoading || isPending
               ? 'Pending...'
               : BigInt(send.amount) < 0

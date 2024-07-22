@@ -1,15 +1,6 @@
 'use client';
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -27,45 +18,61 @@ import { useAccount } from 'wagmi';
 
 interface DialogTokenProps {
   tokens: Token[];
+  id: 1 | 2;
 }
 
-export const DialogToken = ({ tokens }: DialogTokenProps) => {
+export const DialogToken = ({ tokens, id }: DialogTokenProps) => {
   const [open, setOpen] = useAtom(dialogOpenAtom);
   const [activeToken, setActiveToken] = useAtom(activeTokenAtom);
-  const [balance, setBalance] = useAtom(balanceAtom);
+  const [_, setBalance] = useAtom(balanceAtom);
 
   useEffect(() => {
-    setActiveToken(tokens[0]);
+    setActiveToken({ token1: tokens[0], token2: tokens[0] });
   }, []);
 
   const account = useAccount();
 
   const handleSelect = (value: string) => {
     const token = tokens.find((token) => token.name === value);
-    if (token) {
-      setActiveToken(token);
-      setOpen(false);
-      console.log('token', token);
-      if (!account.address) return;
-      getBalanceOf(token.address, account.address).then((balance) => {
-        if (!balance) return;
-        console.log('balance', balance);
-        setBalance(balance);
-      });
-    }
+    if (!token) return;
+    setActiveToken((prev) =>
+      id === 1 ? { ...prev, token1: token } : { ...prev, token2: token }
+    );
+    console.log('token', token);
+    if (!account.address) return;
+    getBalanceOf(token.address, account.address).then((balance) => {
+      if (!balance) return;
+      console.log('balance', balance);
+      if (id === 1) setBalance((prev) => ({ ...prev, balance1: balance }));
+      if (id === 2) setBalance((prev) => ({ ...prev, balance2: balance }));
+    });
+    setOpen({ open1: false, open2: false });
   };
 
   return (
     <div>
       <button
         className='rounded-full border border-slate-800 flex gap-2 items-center justify-center pr-2 p-1 bg-black'
-        onClick={() => setOpen(true)}
+        onClick={() =>
+          setOpen({
+            open1: id === 1 ? !open.open1 : open.open1,
+            open2: id === 2 ? !open.open2 : open.open2,
+          })
+        }
       >
         <Image src='/logo-glx1.webp' alt='eth-logo' width={35} height={35} />
-        {activeToken?.ticker}
+        {id === 1 ? activeToken.token1?.name : activeToken.token2?.name}
         <ChevronDown />
       </button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog
+        open={id === 1 ? open.open1 : open.open2}
+        onOpenChange={(value) =>
+          setOpen({
+            open1: id === 1 ? value : open.open1,
+            open2: id === 2 ? value : open.open2,
+          })
+        }
+      >
         <CommandInput placeholder='Search name or paste address' />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
