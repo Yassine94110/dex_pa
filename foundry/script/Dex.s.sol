@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {Script, console} from "forge-std/Script.sol";
 import {DEX} from "../src/DEX.sol";
 import {ERC20Factory} from "../src/ERC20Factory.sol";
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
 contract DexScript is Script {
     DEX public dex;
@@ -62,7 +62,7 @@ contract DexScript is Script {
             dex.grantAdmin(account3);
             erc20Factory = new ERC20Factory();
 
-            erc20Factory.createToken("GalaxySwapProtocol", "GST", maxSupply);
+            erc20Factory.createToken("GalaxySP", "GST", maxSupply);
             erc20Factory.createToken("Solstice", "SOL", maxSupply);
             erc20Factory.createToken("Nebula", "NBL", maxSupply);
             erc20Factory.createToken("Aether", "AET", maxSupply);
@@ -87,7 +87,11 @@ contract DexScript is Script {
                 erc20Factory.getToken(9).tokenAddress
             ];
             for (uint256 i = 0; i < tokenAddresses.length; i++) {
-                console.log("Token address: ", tokenAddresses[i]);
+                IERC20 token = IERC20(tokenAddresses[i]);
+                console.log("---> Token address: ", address(token));
+                console.log("Supply: ", token.totalSupply());
+                console.log("Name: ", token.name());
+                console.log("Symbol: ", token.symbol());
             }
             transferTokensTo(tokenAddresses, account1, 1000000 * 1 ether);
             transferTokensTo(tokenAddresses, account3, 1000000 * 1 ether);
