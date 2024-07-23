@@ -10,20 +10,22 @@ USERS=(
     '{"address":"0x34567890abcdef12","username":"user3"}'
     '{"address":"0x4567890abcdef123","username":"user4"}'
     '{"address":"0xA21039F3c7ba23C1fC14BBD59481e0E7f085C68d","username":"Hamza"}'
+    '{"address":"0xE1E71b5FeA42cBa159fF3f12C4C104eE38a33a2F","username":"TheoAdmin"}'
+    '{"address":"0x1232627c42266AfE57626da09948B6ED55C899C0","username":"Teyiko"}'
 )
 
 # Données des tokens
 TOKENS=(
-    '{"address":"0x0528E0979F18d5BA324e96191e6A661A3f3965fc","name":"GalaxySwapProtocol","ticker":"GST","supply":"1000000000000"}'
-    '{"address":"0x90766C298A1d46998aaDBA3A9F8Bd92De86beE8a","name":"Solstice","ticker":"SOL","supply":"1000000000000"}'
-    '{"address":"0x8Ce482A07115A46861a7c75e9Fb00D8AB335FFA1","name":"Nebula","ticker":"NBL","supply":"1000000000000"}'
-    '{"address":"0xd1b86B54B3eFC8f1d8e7a414c26b85803F358BDe","name":"Aether","ticker":"AET","supply":"1000000000000"}'
-    '{"address":"0x5eb2b36Ca72e6372769d287AA828F4Ee50734b95","name":"Zephyr","ticker":"ZPH","supply":"1000000000000"}'
-    '{"address":"0xF6E91E639e95e79bdf5f710EA27f224723F886d7","name":"Lumin","ticker":"LMN","supply":"1000000000000"}'
-    '{"address":"0xfBF7E5a22d608ab8F89cA8Fc00BE626927e14A0B","name":"Orion","ticker":"ORN","supply":"1000000000000"}'
-    '{"address":"0x838411108a7996f35Aa2cfF1F5d271B202679750","name":"Phoenix","ticker":"PHX","supply":"1000000000000"}'
-    '{"address":"0x5825B56fe9DC5aB16dB07EbE34956E1b633a132F","name":"Aurora","ticker":"AUR","supply":"1000000000000"}'
-    '{"address":"0xaf3dc32b3ae94bff4FcfDDfe1052AD83d62C982C","name":"Celestia","ticker":"CLT","supply":"1000000000000"}'
+    '{"address":"0x5c93f0B18B60C4850Fdda62494c364F7A4517B67","name":"GalaxySP","ticker":"GST","supply":"1000000000000000000000000000000"}'
+    '{"address":"0x382F6400b170061AF23cE52B701CC52617e2A5A7","name":"Solstice","ticker":"SOL","supply":"1000000000000000000000000000000"}'
+    '{"address":"0x183C7F30eeFCd6381260812a7e64b4e5E41a4911","name":"Nebula","ticker":"NBL","supply":"1000000000000000000000000000000"}'
+    '{"address":"0xc1C0F5060F26E2E55E1B0dD67E3CE8566c5Fd8aD","name":"Aether","ticker":"AET","supply":"1000000000000000000000000000000"}'
+    '{"address":"0xaF4Fed9a5cf79E870799E03F62D563238820C814","name":"Zephyr","ticker":"ZPH","supply":"1000000000000000000000000000000"}'
+    '{"address":"0x0c85734202EC06115B0Cec648E6DA281E118Fad9","name":"Lumin","ticker":"LMN","supply":"1000000000000000000000000000000"}'
+    '{"address":"0x91f5A1a6203ACEA3bd90ecF8C94a23968973f3Bc","name":"Orion","ticker":"ORN","supply":"1000000000000000000000000000000"}'
+    '{"address":"0x6C3b05d0515C8b078AACc4699375B05279b4446d","name":"Phoenix","ticker":"PHX","supply":"1000000000000000000000000000000"}'
+    '{"address":"0xAaF96b248fe974412C2854C11EbCbEe3B7bc9303","name":"Aurora","ticker":"AUR","supply":"1000000000000000000000000000000"}'
+    '{"address":"0x585aAf71Dfc198c7C075D2A6f9D079A347bCf8a8","name":"Celestia","ticker":"CLT","supply":"1000000000000000000000000000000"}'
 )
 
 # Fonction pour envoyer une requête POST
