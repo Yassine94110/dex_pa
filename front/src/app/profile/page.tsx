@@ -53,7 +53,7 @@ const page = () => {
   const handleUpdateUsername = async () => {
     if (User && newUsername !== User.username) {
       try {
-        const updatedUser = await updateUsername(User.id, newUsername);
+        const updatedUser = await updateUsername(User.id, newUsername,User.address);
         setUser(updatedUser);
         alert('Username updated successfully');
       } catch (error) {

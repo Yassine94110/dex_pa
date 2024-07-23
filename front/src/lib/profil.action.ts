@@ -51,13 +51,13 @@ export const isAdmin = async (address: string): Promise<boolean> => {
     return admin as boolean;
 }
 
-export const updateUsername = async (id: number, newUsername: string): Promise<User> => {
+export const updateUsername = async (id: number, newUsername: string, address: string): Promise<User> => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username: newUsername }),
+        body: JSON.stringify({ username: newUsername, address }),
     });
 
     if (!response.ok) {
