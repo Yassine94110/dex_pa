@@ -10,8 +10,8 @@ import (
 )
 
 const infuraURL = "https://sepolia.infura.io/v3/10641427c6714f2784e2467206e5fadb"
-const contractAddress = "0x721A81953e15fe80B00488d048F6Cc7177280097"
-const swapExecutedTopic = "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
+const contractAddress = "0x3747365453363a80d2f182d44db5a361dE3F7300"
+const swapExecutedTopic = "0x764f0dc063c06f32d89a3f3af80c0db4be8a090901f589a478b447e0a51f09f1"
 
 type JSONRPCRequest struct {
 	JSONRPC string        `json:"jsonrpc"`

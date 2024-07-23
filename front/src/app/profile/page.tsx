@@ -30,24 +30,23 @@ const page = () => {
       getAnalyticsByAddress(address ?? '').then((analytics) => {
         setAnalytics(analytics);
       });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isConnected) {
       isAdmin(address ?? '').then((admin) => {
         setUserIsAdmin(admin);
       });
+      getAllUsers().then((users) => {
+        setAllUsers(users);
+      });
+      getAnalytics().then((analytics) => {
+        setAllAnalytics(analytics);
+      });
     }
-  }, [isConnected]);
-
-  
-
-  if (UserIsAdmin) {
-    getAllUsers().then((users) => {
-      setAllUsers(users);
-    });
-    getAnalytics().then((analytics) => {
-      setAllAnalytics(analytics);
-    });
   }
-
-
+  , [UserIsAdmin]);
     
 
   return (
