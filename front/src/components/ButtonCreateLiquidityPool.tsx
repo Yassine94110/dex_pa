@@ -52,8 +52,7 @@ export const ButtonCreateLiquidityPool = () => {
       setHasBeenCreated(true);
       const token1 = activeToken.token1?.address;
       const token2 = activeToken.token2?.address;
-      if (token1 === undefined || token2 === undefined) return;
-      getPool(token1, token2).then((pool) => {
+      getPool(token1!, token2!).then((pool) => {
         getPoolInformation(pool).then((poolInfo) => {
           setPool(poolInfo);
         });
