@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"strings"
 
 	"dex_pa/prisma/db"
 
@@ -107,6 +108,11 @@ func hexToBigInt(hexStr string) *big.Int {
 	return i
 }
 
+func padAddress(address string) string {
+	address = strings.ToLower(strings.TrimPrefix(address, "0x"))
+	return "0x" + strings.Repeat("0", 64-len(address)) + address
+}
+
 func GetAnalytics(client *db.PrismaClient) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		fromBlock := "0x5fb619" // Bloc 6282585 en hexadécimal
@@ -127,9 +133,9 @@ func GetAnalytics(client *db.PrismaClient) fiber.Handler {
 			if len(log.Topics) > 0 && log.Topics[0] == swapExecutedTopic {
 				swapCount++
 				data := log.Data
-				if len(data) >= 128 {
-					amountIn := hexToBigInt(data[2:66])
-					amountOut := hexToBigInt(data[66:130])
+				if len(data) >= 256 {
+					amountIn := hexToBigInt(data[130:194])
+					amountOut := hexToBigInt(data[194:258])
 					totalAmountIn.Add(totalAmountIn, amountIn)
 					totalAmountOut.Add(totalAmountOut, amountOut)
 				}
@@ -152,7 +158,7 @@ func GetAnalyticsByAddress(client *db.PrismaClient) fiber.Handler {
 		fromBlock := "0x5fb619" // Bloc 6282585 en hexadécimal
 		toBlock := "latest"     // Jusqu'au bloc le plus récent
 		address := os.Getenv("CONTRACT_ADDRESS")
-		userAddress := c.Params("address")
+		userAddress := padAddress(c.Params("address"))
 
 		logs, err := getLogs(fromBlock, toBlock, address, []string{swapExecutedTopic, userAddress})
 		if err != nil {
@@ -167,9 +173,9 @@ func GetAnalyticsByAddress(client *db.PrismaClient) fiber.Handler {
 			if len(log.Topics) > 0 && log.Topics[0] == swapExecutedTopic {
 				swapCount++
 				data := log.Data
-				if len(data) >= 128 {
-					amountIn := hexToBigInt(data[2:66])
-					amountOut := hexToBigInt(data[66:130])
+				if len(data) >= 256 {
+					amountIn := hexToBigInt(data[130:194])
+					amountOut := hexToBigInt(data[194:258])
 					totalAmountIn.Add(totalAmountIn, amountIn)
 					totalAmountOut.Add(totalAmountOut, amountOut)
 				}

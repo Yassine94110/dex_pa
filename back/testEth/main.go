@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-const infuraURL = "https://sepolia.infura.io/v3/10641427c6714f2784e2467206e5fadb"
+const infuraURL = "https://sepolia.infura.io/v3/"
 const contractAddress = "0x3747365453363a80d2f182d44db5a361dE3F7300"
 const swapExecutedTopic = "0x764f0dc063c06f32d89a3f3af80c0db4be8a090901f589a478b447e0a51f09f1"
 
@@ -137,14 +137,16 @@ func main() {
 			swapCount++
 			data := log.Data
 			fmt.Printf("Data du log: %s\n", data)
-			if len(data) >= 128 {
-				amountIn := hexToBigInt(data[2:66])
-				amountOut := hexToBigInt(data[66:130])
+			if len(data) >= 256 {
+				tokenIn := "0x" + data[26:66]
+				tokenOut := "0x" + data[90:130]
+				amountIn := hexToBigInt(data[130:194])
+				amountOut := hexToBigInt(data[194:258])
 				totalAmountIn.Add(totalAmountIn, amountIn)
 				totalAmountOut.Add(totalAmountOut, amountOut)
-				fmt.Printf("amountIn: %s, amountOut: %s\n", amountIn.String(), amountOut.String())
+				fmt.Printf("tokenIn: %s, tokenOut: %s, amountIn: %s, amountOut: %s\n", tokenIn, tokenOut, amountIn.String(), amountOut.String())
 			} else {
-				fmt.Println("Data du log est trop court pour contenir amountIn et amountOut.")
+				fmt.Println("Data du log est trop court pour contenir les informations nécessaires.")
 			}
 		} else {
 			fmt.Println("Log n'est pas un SwapExecuted.")
