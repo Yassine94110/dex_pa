@@ -121,3 +121,12 @@ export const getOppositeAmount = async (
   })) as bigint;
   return oppositeAmount;
 };
+
+export const getPool = async (token1: `0x${string}`, token2: `0x${string}`) => {
+  return readContract(config, {
+    address: process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`,
+    abi: dexAbi,
+    functionName: 'getPool',
+    args: [token1, token2],
+  });
+};
