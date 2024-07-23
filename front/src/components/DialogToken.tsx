@@ -1,109 +1,102 @@
+'use client';
+
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
-  CommandShortcut,
 } from '@/components/ui/command';
 import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
+import { getBalanceOf, Token } from '@/lib/token.action';
+import { useAtom } from 'jotai';
+import { activeTokenAtom, balanceAtom, dialogOpenAtom } from '@/lib/atom';
+import { useEffect } from 'react';
+import { useAccount } from 'wagmi';
 
-export const DialogToken = () => {
-  return (
-    <Dialog>
-      <DialogTrigger className='rounded-full border border-slate-800 flex gap-2 items-center justify-center pr-2 p-1 bg-black'>
-        <Image src='/eth.png' alt='eth-logo' width={50} height={50} />
-        ETH
-        <ChevronDown />
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Select a token</DialogTitle>
-          <DialogDescription>
-            <Command>
-              <CommandInput placeholder='Search name or paste address' />
-              <CommandList>
-                <CommandEmpty>No results found.</CommandEmpty>
-                <CommandGroup heading='Your tokens'>
-                  <CommandToken
-                    token='BTC'
-                    short='Bitcoin'
-                    howMany={1}
-                    img='/btc.png'
-                  />
-                  <CommandToken
-                    token='ETH'
-                    short='Ethereum'
-                    howMany={2}
-                    img='/eth.png'
-                  />
-                  <CommandToken
-                    token='ADA'
-                    short='Cardano'
-                    howMany={3}
-                    img='/ada.png'
-                  />
-                </CommandGroup>
-                <CommandSeparator />
-                <CommandGroup heading='Popular tokens'>
-                  <CommandToken
-                    token='XRP'
-                    short='Ripple'
-                    howMany={4}
-                    img='/xrp.png'
-                  />
-                  <CommandToken
-                    token='LTC'
-                    short='Litecoin'
-                    howMany={5}
-                    img='/ltc.png'
-                  />
-                  <CommandToken
-                    token='BCH'
-                    short='Bitcoin Cash'
-                    howMany={6}
-                    img='/bch.png'
-                  />
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </DialogDescription>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-interface CommandTokenProps {
-  token: string;
-  short: string;
-  howMany: number;
-  img: string;
+interface DialogTokenProps {
+  tokens: Token[];
+  id: 1 | 2;
 }
 
-const CommandToken = ({ token, short, howMany, img }: CommandTokenProps) => {
+export const DialogToken = ({ tokens, id }: DialogTokenProps) => {
+  const [open, setOpen] = useAtom(dialogOpenAtom);
+  const [activeToken, setActiveToken] = useAtom(activeTokenAtom);
+  const [_, setBalance] = useAtom(balanceAtom);
+
+  useEffect(() => {
+    setActiveToken({ token1: tokens[0], token2: tokens[0] });
+  }, []);
+
+  const account = useAccount();
+
+  const handleSelect = (value: string) => {
+    const token = tokens.find((token) => token.name === value);
+    if (!token) return;
+    setActiveToken((prev) =>
+      id === 1 ? { ...prev, token1: token } : { ...prev, token2: token }
+    );
+    console.log('token', token);
+    if (!account.address) return;
+    getBalanceOf(token.address, account.address).then((balance) => {
+      if (!balance) return;
+      console.log('balance', balance);
+      if (id === 1) setBalance((prev) => ({ ...prev, balance1: balance }));
+      if (id === 2) setBalance((prev) => ({ ...prev, balance2: balance }));
+    });
+    setOpen({ open1: false, open2: false });
+  };
+
   return (
-    <CommandItem className='flex justify-between'>
-      <div className='flex items-center justify-center'>
-        <Image src={img} alt={token + ' logo'} width={60} height={60} />
-        <div className='flex flex-col gap-2'>
-          <span>{token}</span>
-          <span className='texte-slate-300 text-xs'>{short}</span>
-        </div>
-      </div>
-      <span>{howMany}</span>
-    </CommandItem>
+    <div>
+      <button
+        className='rounded-full border border-slate-800 flex gap-2 items-center justify-center pr-2 p-1 bg-black'
+        onClick={() =>
+          setOpen({
+            open1: id === 1 ? !open.open1 : open.open1,
+            open2: id === 2 ? !open.open2 : open.open2,
+          })
+        }
+      >
+        <Image src='/logo-glx1.webp' alt='eth-logo' width={35} height={35} />
+        {id === 1 ? activeToken.token1?.name : activeToken.token2?.name}
+        <ChevronDown />
+      </button>
+      <CommandDialog
+        open={id === 1 ? open.open1 : open.open2}
+        onOpenChange={(value) =>
+          setOpen({
+            open1: id === 1 ? value : open.open1,
+            open2: id === 2 ? value : open.open2,
+          })
+        }
+      >
+        <CommandInput placeholder='Search name or paste address' />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading='Popular tokens'>
+            {tokens.map((token: Token) => (
+              <CommandItem
+                key={token.id}
+                className='flex justify-between cursor-pointer z-50'
+                onSelect={(value) => handleSelect(value)}
+              >
+                <div className='flex items-center justify-center gap-4'>
+                  <Image
+                    src='/logo-glx1.webp'
+                    alt={token + ' logo'}
+                    width={45}
+                    height={45}
+                  />
+                  <span>{token.name}</span>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+    </div>
   );
 };

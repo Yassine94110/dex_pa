@@ -1,41 +1,32 @@
 'use client';
 
-import { dexAbi } from '@/lib/abi/dex.abi';
-import {
-  useWaitForTransactionReceipt,
-  useWriteContract,
-  type BaseError,
-} from 'wagmi';
 import { Button } from './ui/button';
 import { Dispatch, SetStateAction, useEffect } from 'react';
+import {
+  useWriteContract,
+  type BaseError,
+  useWaitForTransactionReceipt,
+} from 'wagmi';
+import { dexAbi } from '@/lib/abi/dex.abi';
 
-interface RegisterToDexButtonProps {
+interface RToDexProps {
   setIsRegistered: Dispatch<SetStateAction<boolean>>;
 }
 
-export const RegisterToDexButton = ({
-  setIsRegistered,
-}: RegisterToDexButtonProps) => {
-  const {
-    data: hash,
-    writeContract,
-    isPending,
-    isSuccess,
-    error,
-  } = useWriteContract();
-
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash,
-    });
+export const RegisterToDexButton = ({ setIsRegistered }: RToDexProps) => {
+  const { data: hash, isPending, writeContract, error } = useWriteContract();
 
   const handleRegister = async () => {
     writeContract({
-      abi: dexAbi,
       address: process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`,
+      abi: dexAbi,
       functionName: 'register',
     });
   };
+
+  const { isLoading, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+  });
 
   useEffect(() => {
     if (isSuccess) {
@@ -45,23 +36,21 @@ export const RegisterToDexButton = ({
 
   return (
     <div>
-      {!isPending ? (
-        <Button onClick={() => handleRegister()}>
-          Register to the DEX first
-        </Button>
-      ) : (
-        <Button disabled variant='ghost'>
-          Loading
-        </Button>
-      )}
+      <Button
+        onClick={() => handleRegister()}
+        disabled={isPending || isLoading}
+      >
+        {isPending
+          ? 'Confirming...'
+          : isLoading
+          ? 'Transaction pending...'
+          : 'Register to the DEX first'}
+      </Button>
       {error && (
         <div className='text-xs italic text-red-900 mt-4'>
           Error: {(error as BaseError).shortMessage || error.message}
         </div>
       )}
-      {hash && <div>Transaction Hash: {hash}</div>}
-      {isConfirming && <div>Waiting for confirmation...</div>}
-      {isConfirmed && <div>Transaction confirmed.</div>}
     </div>
   );
 };

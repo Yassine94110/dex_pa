@@ -5,10 +5,11 @@ import { dexAbi } from './abi/dex.abi';
 import { config } from './config';
 import { liquityPoolsAbi } from './abi/liquidityPools.abi';
 import { erc20Abi } from 'viem';
+import { revalidatePath } from 'next/cache';
 
 export interface Pool {
   address: `0x${string}`;
-  tvl: number;
+  tvl: bigint;
   assetOneLock: bigint;
   assetTwoLock: bigint;
   assetOne: Asset;
@@ -34,6 +35,7 @@ export const getAllPools = async () => {
     pools.push(poolInformation);
   }
 
+  revalidatePath('/pool');
   return pools;
 };
 
@@ -55,7 +57,9 @@ export const getPoolInformation = async (poolAddress: `0x${string}`) => {
 
   const poolInformation: Pool = {
     address: poolAddress,
-    tvl: 0,
+    tvl:
+      (await getAssetLock(assetOneAddress, poolAddress)) +
+      (await getAssetLock(assetTwoAddress, poolAddress)),
     assetOneLock: await getAssetLock(assetOneAddress, poolAddress),
     assetTwoLock: await getAssetLock(assetTwoAddress, poolAddress),
     assetOne: {
@@ -70,6 +74,7 @@ export const getPoolInformation = async (poolAddress: `0x${string}`) => {
     },
   };
 
+  revalidatePath(`/pool/${poolAddress}`);
   return poolInformation;
 };
 
@@ -106,13 +111,23 @@ export const getAssetInformation = async (assetAddress: `0x${string}`) => {
 export const getOppositeAmount = async (
   poolAddress: `0x${string}`,
   tokenAddress: `0x${string}`,
-  amount: number
+  amount: bigint
 ) => {
   const oppositeAmount = (await readContract(config, {
     address: poolAddress,
     abi: liquityPoolsAbi,
     functionName: 'amountOfOppositeTokenNeeded',
-    args: [tokenAddress, BigInt(amount)],
+    args: [tokenAddress, amount],
   })) as bigint;
-  return String(oppositeAmount);
+  return oppositeAmount;
+};
+
+export const getPool = async (token1: `0x${string}`, token2: `0x${string}`) => {
+  const poolAddress = readContract(config, {
+    address: process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`,
+    abi: dexAbi,
+    functionName: 'getPool',
+    args: [token1, token2],
+  });
+  return poolAddress;
 };

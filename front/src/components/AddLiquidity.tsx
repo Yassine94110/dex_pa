@@ -6,22 +6,16 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
 
-import {
-  useAccount,
-  useWriteContract,
-  useWaitForTransactionReceipt,
-  useReadContract,
-  usePrepareTransactionRequest,
-  type BaseError,
-} from 'wagmi';
-import { dexAbi } from '@/lib/abi/dex.abi';
+import { useAccount } from 'wagmi';
+import { useAtom } from 'jotai';
+import { tokenAtom } from '@/lib/atom';
 import { RegisterToDexButton } from './RegisterToDexButton';
 import { isRegistered } from '@/lib/dex.action';
+import { ButtonAddLiquidity } from './ButtonAddLiquidity';
 
 export const AddLiquidity = ({ pool }: { pool: Pool }) => {
-  const { assetOneLock, assetTwoLock, assetOne, assetTwo } = pool;
-  const [token1, setToken1] = useState<string>('');
-  const [token2, setToken2] = useState<string>('');
+  const { assetOne, assetTwo } = pool;
+  const [token, setToken] = useAtom(tokenAtom);
   const [isRegister, setIsRegistered] = useState(false);
 
   const account = useAccount();
@@ -30,70 +24,36 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
     if (account.status === 'connected') {
       isRegistered(account.address).then((registered) => {
         setIsRegistered(registered);
-        console.log('registered', registered);
       });
     }
-  }, [account]);
-
-  const {
-    data: hash,
-    writeContract,
-    isPending,
-    isSuccess: isConfirmed,
-    error,
-  } = useWriteContract();
-
-  const { isLoading, isSuccess } = useWaitForTransactionReceipt({
-    hash,
-  });
-
-  const handleClick = async () => {
-    console.log('assetOne', assetOne.address);
-    console.log('assetTwo', assetTwo.address);
-    console.log('token1', BigInt(token1) * BigInt(10 ** 18));
-    // console.log('dex_contract', process.env.DEX_CONTRACT! as `0x${string}`);
-    writeContract({
-      abi: dexAbi,
-      address: process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`,
-      functionName: 'addLiquidity',
-      args: [
-        assetOne.address,
-        assetTwo.address,
-        BigInt(token1) * BigInt(10 ** 18),
-      ],
-    });
-  };
+  }, [account.address, account]);
 
   const handleChangeToken1 = async (e: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (value < 0 && isNaN(value)) {
-      setToken1('');
-      setToken2('');
+    const value1 = BigInt(e.target.value) * BigInt(10 ** 18);
+    if (value1 < 0) {
+      setToken({ value1: BigInt(0), value2: BigInt(0) });
       return;
     }
-    setToken1(String(value));
-    const oppositeAmount = await getOppositeAmount(
+    const value2 = await getOppositeAmount(
       pool.address,
       pool.assetOne.address,
-      value
+      value1
     );
-    setToken2(oppositeAmount);
+    setToken({ value1, value2 });
   };
 
   const handleChangeToken2 = async (e: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (value < 0) {
-      setToken1('');
-      setToken2('');
+    const value2 = BigInt(e.target.value) * BigInt(10 ** 18);
+    if (value2 < 0) {
+      setToken({ value1: BigInt(0), value2: BigInt(0) });
       return;
     }
-    setToken2(String(value));
-    const oppositeAmount = await getOppositeAmount(
+    const value1 = await getOppositeAmount(
       pool.address,
       pool.assetTwo.address,
-      value
+      value2
     );
-    setToken1(oppositeAmount);
+    setToken({ value1, value2 });
   };
 
   return (
@@ -104,7 +64,7 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
           type='string'
           placeholder='0.00'
           onChange={(e) => handleChangeToken1(e)}
-          value={token1}
+          value={String(token.value1 / BigInt(10 ** 18))}
         />
       </div>
       <div className='grid w-full max-w-sm items-center gap-1.5'>
@@ -113,32 +73,18 @@ export const AddLiquidity = ({ pool }: { pool: Pool }) => {
           type='string'
           placeholder='0.00'
           onChange={(e) => handleChangeToken2(e)}
-          value={token2}
+          value={String(token.value2 / BigInt(10 ** 18))}
         />
       </div>
       {account.status === 'connected' ? (
         <div>
-          {isPending ? (
-            <Button disabled variant='ghost'>
-              Loading
-            </Button>
-          ) : isRegister ? (
-            <Button onClick={() => handleClick()}>Add Liquidity</Button>
-          ) : (
+          {!isRegister && (
             <RegisterToDexButton setIsRegistered={setIsRegistered} />
           )}
+          {isRegister && <ButtonAddLiquidity pool={pool} />}
         </div>
       ) : (
         <Button disabled>Connect Wallet First</Button>
-      )}
-
-      {hash && <div>Transaction Hash: {hash}</div>}
-      {isSuccess && <div>Waiting for confirmation...</div>}
-      {isConfirmed && <div>Transaction confirmed.</div>}
-      {error && (
-        <div className='text-xs italic text-red-900'>
-          Error: {(error as BaseError).shortMessage || error.message}
-        </div>
       )}
     </div>
   );
