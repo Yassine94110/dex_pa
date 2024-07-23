@@ -3,14 +3,8 @@
 import { Input } from '@/components/ui/input';
 import { BorderBeam } from './ui/border-beam';
 import { ArrowDownUp } from 'lucide-react';
-import ShinyButton from './ui/shiny-button';
 import { DialogToken } from './DialogToken';
 import { Token } from '@/lib/token.action';
-import {
-  useAccount,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from 'wagmi';
 import {
   activePoolAddressAtom,
   activeTokenAtom,
