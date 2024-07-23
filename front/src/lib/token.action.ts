@@ -46,6 +46,20 @@ export const getAllowance = async (
   return { token1: allowance1, token2: allowance2 };
 };
 
+export const getSimpleAllowance = async (
+  poolAddress: `0x${string}`,
+  userAddress: `0x${string}`,
+  tokenAddress: `0x${string}`
+) => {
+  const allowance = (await readContract(config, {
+    address: tokenAddress,
+    abi: erc20Abi,
+    functionName: 'allowance',
+    args: [userAddress, poolAddress],
+  })) as bigint;
+  return allowance;
+};
+
 export const getBalanceOf = async (
   address: `0x${string}`,
   userAddress: `0x${string}`
@@ -101,8 +115,13 @@ export const getTokenInfo = async (address: `0x${string}`): Promise<any> => {
     functionName: 'totalSupply',
   });
 
-  return { address: address, name: tokenName, symbol: tokenSymbol, supply: tokenSupply };
-}
+  return {
+    address: address,
+    name: tokenName,
+    symbol: tokenSymbol,
+    supply: tokenSupply,
+  };
+};
 
 //methode post
 export const createToken = async (address: `0x${string}`): Promise<Token> => {
@@ -112,8 +131,13 @@ export const createToken = async (address: `0x${string}`): Promise<Token> => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ address, name: token.name, ticker: token.symbol, supply: token.supply }),
+    body: JSON.stringify({
+      address,
+      name: token.name,
+      ticker: token.symbol,
+      supply: token.supply,
+    }),
   });
-  
+
   return response.json();
-}
+};

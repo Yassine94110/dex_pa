@@ -123,10 +123,11 @@ export const getOppositeAmount = async (
 };
 
 export const getPool = async (token1: `0x${string}`, token2: `0x${string}`) => {
-  return readContract(config, {
+  const poolAddress = readContract(config, {
     address: process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`,
     abi: dexAbi,
     functionName: 'getPool',
     args: [token1, token2],
   });
+  return poolAddress;
 };

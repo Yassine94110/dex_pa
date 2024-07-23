@@ -53,3 +53,5 @@ export const swapAtom = atom<{
   amount1: 0,
   amount2: 0,
 });
+
+export const activePoolAddressAtom = atom<`0x${string}` | null>(null);

@@ -11,8 +11,16 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from 'wagmi';
-import { activeTokenAtom, balanceAtom } from '@/lib/atom';
+import {
+  activePoolAddressAtom,
+  activeTokenAtom,
+  balanceAtom,
+  swapAtom,
+} from '@/lib/atom';
 import { useAtom } from 'jotai';
+import { CheckSwapLP } from './CheckSwapLP';
+import { useEffect } from 'react';
+import { getOppositeAmount, getPool } from '@/lib/pool.action';
 
 interface SwapProps {
   tokens: Token[];
@@ -21,21 +29,8 @@ interface SwapProps {
 export const Swap = ({ tokens }: SwapProps) => {
   const [balance, setBalance] = useAtom(balanceAtom);
   const [activeToken, setActiveToken] = useAtom(activeTokenAtom);
-  const account = useAccount();
-
-  const { data: hash, isPending, writeContract, error } = useWriteContract();
-  const handleSwap = async () => {
-    // writeContract({
-    //   address: process.env.NEXT_PUBLIC_DEX_CONTRACT! as `0x${string}`,
-    //   abi: dexAbi,
-    //   functionName: 'swap',
-    //   args: [],
-    // });
-  };
-
-  const { isLoading, isSuccess } = useWaitForTransactionReceipt({
-    hash,
-  });
+  const [swap, setSwap] = useAtom(swapAtom);
+  const [poolAddress, setPoolAddress] = useAtom(activePoolAddressAtom);
 
   const handleChange = () => {
     setActiveToken({
@@ -46,6 +41,57 @@ export const Swap = ({ tokens }: SwapProps) => {
       balance1: balance.balance2,
       balance2: balance.balance1,
     });
+    setSwap({
+      amount1: swap.amount2,
+      amount2: swap.amount1,
+    });
+  };
+
+  useEffect(() => {
+    const checkIfPoolExists = async (
+      token1: `0x${string}`,
+      token2: `0x${string}`
+    ) => {
+      try {
+        const poolAddress = await getPool(token1, token2);
+        setPoolAddress(poolAddress);
+      } catch (error) {
+        setPoolAddress(null);
+      }
+    };
+    checkIfPoolExists(
+      activeToken.token1?.address!,
+      activeToken.token2?.address!
+    );
+    setSwap({
+      amount1: 0,
+      amount2: 0,
+    });
+  }, [activeToken]);
+
+  const handleChangeValue = async (value: string, id: number) => {
+    if (id === 1) {
+      const amount2 = !poolAddress
+        ? 0
+        : await getOppositeAmount(
+            poolAddress,
+            activeToken.token2?.address!,
+            BigInt(value)
+          );
+      setSwap({
+        amount1: Number(value),
+        amount2: Number(amount2),
+      });
+    } else {
+      const amount1 = !poolAddress
+        ? 0
+        : await getOppositeAmount(
+            poolAddress,
+            activeToken.token2?.address!,
+            BigInt(value)
+          );
+      setSwap({ amount1: Number(amount1), amount2: Number(value) });
+    }
   };
 
   return (
@@ -66,6 +112,8 @@ export const Swap = ({ tokens }: SwapProps) => {
             <Input
               className='bg-transparent truncate appearance-none dark:text-slate-50 text-gray-900 w-full !ring-0 !outline-none min-h-[40px] h-[40px] py-2 border-0 p-0 !text-3xl font-medium flex-grow flex-1'
               defaultValue='0'
+              onChange={(e) => handleChangeValue(e.target.value, 1)}
+              value={swap.amount1}
             />
             <DialogToken tokens={tokens} id={1} />
           </div>
@@ -93,6 +141,8 @@ export const Swap = ({ tokens }: SwapProps) => {
             <Input
               className='bg-transparent truncate appearance-none dark:text-slate-50 text-gray-900 w-full !ring-0 !outline-none min-h-[40px] h-[40px] py-2 border-0 p-0 !text-3xl font-medium flex-grow flex-1'
               defaultValue='0'
+              onChange={(e) => handleChangeValue(e.target.value, 2)}
+              value={swap.amount2}
             />
             <DialogToken tokens={tokens} id={2} />
           </div>
@@ -106,18 +156,7 @@ export const Swap = ({ tokens }: SwapProps) => {
           </div>
         </div>
       </div>
-      <button
-        onClick={() => handleSwap()}
-        disabled={account.status !== 'connected'}
-      >
-        <ShinyButton
-          text={
-            account.status !== 'connected'
-              ? 'Connect Your Wallet First'
-              : 'Swap'
-          }
-        />
-      </button>
+      <CheckSwapLP />
     </div>
   );
 };

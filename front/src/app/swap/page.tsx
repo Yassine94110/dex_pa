@@ -12,11 +12,11 @@ export default async function Home() {
       value: 'swap',
       content: <Swap tokens={tokens} />,
     },
-    {
-      title: 'Send',
-      value: 'send',
-      content: <Send tokens={tokens} />,
-    },
+    // {
+    //   title: 'Send',
+    //   value: 'send',
+    //   content: <Send tokens={tokens} />,
+    // },
   ];
 
   return (
