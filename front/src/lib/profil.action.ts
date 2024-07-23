@@ -1,6 +1,5 @@
 'use server';
 
-import { get } from 'http';
 import { config } from './config';
 import { readContract } from '@wagmi/core';
 import { dexAbi } from './abi/dex.abi';
@@ -51,4 +50,19 @@ export const isAdmin = async (address: string): Promise<boolean> => {
     });
     return admin as boolean;
 }
-    
+
+export const updateUsername = async (id: number, newUsername: string): Promise<User> => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: newUsername }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to update username');
+    }
+
+    return response.json();
+}

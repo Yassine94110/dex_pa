@@ -3,8 +3,8 @@ import ShinyButton from '@/components/ui/shiny-button';
 import Link from 'next/link';
 import { useAccount, useReadContract } from 'wagmi';
 import { dexAbi } from '@/lib/abi/dex.abi';
-import { getAllUsers, getUserByAddress, getAnalytics, getAnalyticsByAddress, User, Analytics, isAdmin } from '@/lib/profil.action';
-import { getTokenInfo } from '@/lib/token.action';
+import { getAllUsers, getUserByAddress, getAnalytics, getAnalyticsByAddress, User, Analytics, isAdmin, updateUsername } from '@/lib/profil.action';
+import { getTokenInfo, createToken } from '@/lib/token.action';
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -21,6 +21,8 @@ const page = () => {
   const [AllUsers, setAllUsers] = useState<User[]>([]);
   const [AllAnalytics, setAllAnalytics] = useState<Analytics | null>(null);
   const [UserIsAdmin, setUserIsAdmin] = useState<boolean>(false);
+  const [newUsername, setNewUsername] = useState<string>('');
+  const [tokenAddress, setTokenAddress] = useState<string>('');
 
   useEffect(() => {
     if (isConnected) {
@@ -46,146 +48,174 @@ const page = () => {
       });
     }
   }
-  , [UserIsAdmin]);
+  , []);
     
+  const handleUpdateUsername = async () => {
+    if (User && newUsername !== User.username) {
+      try {
+        const updatedUser = await updateUsername(User.id, newUsername);
+        setUser(updatedUser);
+        alert('Username updated successfully');
+      } catch (error) {
+        console.error('Failed to update username:', error);
+        alert('Failed to update username');
+      }
+    }
+  }
+
+  const handleAddToken = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const newToken = await createToken(tokenAddress as `0x${string}`);
+      alert('Token added successfully');
+    } catch (error) {
+      console.error('Failed to add token:', error);
+      alert('Failed to add token');
+    }
+  };
 
   return (
     <div className='overflow-auto'>
-    <div className="container mx-auto py-12 px-4 md:px-6 lg:px-8">
-      <div className="grid grid-cols-1 gap-8">
-      <h2 className="text-2xl font-bold">Profil</h2>
-        <div className="bg-background rounded-lg shadow-md p-6">
-          
-          <div className="flex items-center mb-4">
-            
-            <div>
-            <div className="flex items-center">
-                <Input type="text" defaultValue={User?.username} className="text-xl font-bold mr-2" />
-                <Button variant="outline" size="sm">
-                  Update
-                </Button>
+      <div className="container mx-auto py-12 px-4 md:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8">
+          <h2 className="text-2xl font-bold">Profil</h2>
+          <div className="bg-background rounded-lg shadow-md p-6">
+            <div className="flex items-center mb-4">
+              <div>
+                <div className="flex items-center">
+                  <Input
+                    type="text"
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    className="text-xl font-bold mr-2"
+                  />
+                  <Button variant="outline" size="sm" onClick={handleUpdateUsername}>
+                    Update
+                  </Button>
+                </div>
+                <p className="text-muted-foreground">{User?.username}</p>
               </div>
-              <p className="text-muted-foreground">{User?.username}</p>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-muted rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold">{Analytics?.swapCount}</p>
+                <p className="text-muted-foreground">Swaps</p>
+              </div>
+              <div className="bg-muted rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold">{Analytics?.totalSwapped}</p>
+                <p className="text-muted-foreground">Volume of token traded</p>
+              </div>
+              <div className="bg-muted rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold">{Analytics?.feesGenerated}</p>
+                <p className="text-muted-foreground">Fees paid (Eth)</p>
+              </div>
+            </div>
+            <Separator className="my-6" />
+            <div className="grid gap-2">
+              <div>
+                <p className="text-muted-foreground">Address</p>
+                <p>{User?.address}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Date Joined</p>
+                <p>{User?.date_inscription}</p>
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-muted rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold">{Analytics?.swapCount}</p>
-              <p className="text-muted-foreground">Swaps</p>
+          <div className="bg-background rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold">Admin Dashboard</h2>
             </div>
-            <div className="bg-muted rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold">{Analytics?.totalSwapped}</p>
-              <p className="text-muted-foreground">Volume of token traded</p>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="bg-muted p-4 text-center">
+                <CardHeader>
+                  <CardTitle>Total Users</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">{AllUsers.length}</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-muted p-4 text-center">
+                <CardHeader>
+                  <CardTitle>Swaps</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">{AllAnalytics?.swapCount}</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-muted p-4 text-center">
+                <CardHeader>
+                  <CardTitle>Volume of token traded</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">{AllAnalytics?.totalSwapped}</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-muted p-4 text-center">
+                <CardHeader>
+                  <CardTitle>Total fees generated</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">{AllAnalytics?.feesGenerated}</p>
+                </CardContent>
+              </Card>
             </div>
-            <div className="bg-muted rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold">{Analytics?.feesGenerated}</p>
-              <p className="text-muted-foreground">Fees paid (Eth)</p>
-            </div>
-          </div>
-          <Separator className="my-6" />
-          <div className="grid gap-2">
+            <Separator className="my-6" />
             <div>
-              <p className="text-muted-foreground">Address</p>
-              <p>{User?.address}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Date Joined</p>
-              <p>{User?.date_inscription}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-background rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Admin Dashboard</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="bg-muted p-4 text-center">
-              <CardHeader>
-                <CardTitle>Total Users</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-bold">{AllUsers.length}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-muted p-4 text-center">
-              <CardHeader>
-                <CardTitle>Swaps</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-bold">{AllAnalytics?.swapCount}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-muted p-4 text-center">
-              <CardHeader>
-                <CardTitle>Volume of token traded</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-bold">{AllAnalytics?.totalSwapped}</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-muted p-4 text-center">
-              <CardHeader>
-                <CardTitle>Total fees generated</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-bold">{AllAnalytics?.feesGenerated}</p>
-              </CardContent>
-            </Card>
-          </div>
-          <Separator className="my-6" />
-          <div>
-            <h3 className="text-xl font-bold mb-4">All Users</h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Id</TableHead>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>date_inscription</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {AllUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.id}</TableCell>
-                    <TableCell>{user.username}</TableCell>
-                    <TableCell>{user.address}</TableCell>
-                    <TableCell>{user.date_inscription}</TableCell>
-                    <TableCell>
-                      <Button className="mr-2">Ban</Button>
-                      <Button>Delete</Button>
-                    </TableCell>
+              <h3 className="text-xl font-bold mb-4">All Users</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Id</TableHead>
+                    <TableHead>Username</TableHead>
+                    <TableHead>Address</TableHead>
+                    <TableHead>date_inscription</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {AllUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.id}</TableCell>
+                      <TableCell>{user.username}</TableCell>
+                      <TableCell>{user.address}</TableCell>
+                      <TableCell>{user.date_inscription}</TableCell>
+                      <TableCell>
+                        <Button className="mr-2">Ban</Button>
+                        <Button>Delete</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <Separator className="my-6" />
+            <div>
+              <h3 className="text-xl font-bold mb-4">Add Token</h3>
+              <form className="grid gap-4" onSubmit={handleAddToken}>
+                <div>
+                  <Label htmlFor="tokenAddress">Token Address</Label>
+                  <Input
+                    id="tokenAddress"
+                    type="text"
+                    placeholder="Enter token address"
+                    value={tokenAddress}
+                    onChange={(e) => setTokenAddress(e.target.value)}
+                  />
+                </div>
+                <Button type="submit" className="w-full">
+                  Add Token
+                </Button>
+              </form>
+            </div>
+            <Separator className="my-6" />
+            <Link href='/add'>
+              <ShinyButton text='+ Create Pool' />
+            </Link>
           </div>
-          <Separator className="my-6" />
-          <div>
-            <h3 className="text-xl font-bold mb-4">Add Token</h3>
-            <form className="grid gap-4">
-              <div>
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" type="text" placeholder="Enter username" />
-              </div>
-              <div>
-                <Label htmlFor="tokens">Tokens</Label>
-                <Input id="tokens" type="number" placeholder="Enter tokens" />
-              </div>
-              <Button type="submit" className="w-full" onClick={() => console.log(getTokenInfo("0x0528E0979F18d5BA324e96191e6A661A3f3965fc"))}>
-                Add Token
-              </Button>
-            </form>
-          </div>
-          <Separator className="my-6" />
-          <Link href='/add'>
-            <ShinyButton text='+ Create Pool' />
-          </Link>
         </div>
       </div>
     </div>
-  </div>
   );
 };
 
